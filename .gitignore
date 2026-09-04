@@ -1,0 +1,22 @@
+# Secrets & environment
+.env
+*.env
+!.env.example
+backend/.env
+
+# Python
+__pycache__/
+*.pyc
+venv/
+uploads/
+*.db
+test_*.db
+
+# Node
+node_modules/
+.next/
+out/
+
+# OS / editor
+.DS_Store
+Thumbs.db

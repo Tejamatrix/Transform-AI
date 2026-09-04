@@ -1,0 +1,226 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Color tokens — identical across platforms */
+  --bg: #0B0B0C;
+  --surface: #121214;
+  --elevated: #1A1A1D;
+  --line: #232326;
+  --line-subtle: #1F1F23;
+  --input-bg: #0F0F11;
+  --ink: #FFFFFF;
+  --ink-2: #A1A1AA;
+  --ink-3: #6B7280;
+  --accent: #3B82F6;
+  --error: #DC2626;
+  --success: #16A34A;
+  --warn: #D97706;
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "DM Sans", Inter, -apple-system, "Segoe UI", system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Controlled hero gradient — landing page ONLY. Never use inside app UI. */
+.hero-glow {
+  background:
+    radial-gradient(circle at 30% 20%, rgba(59, 130, 246, 0.25), transparent 40%),
+    radial-gradient(circle at 70% 80%, rgba(34, 211, 238, 0.20), transparent 40%),
+    #0B0B0C;
+}
+
+/* Full-page Electric Tundra — initial landing page only.
+   Two blurred orbs drift slowly and overlap, blending into one living wash.
+   Production-safe: low opacity over the dark base, flat UI on top. */
+.landing-gradient {
+  position: relative;
+  background: #0B0B0C;
+  overflow: hidden;
+}
+
+.landing-gradient > * {
+  position: relative;
+  z-index: 1;
+}
+
+.landing-gradient::before,
+.landing-gradient::after {
+  content: "";
+  position: absolute;
+  width: 65vmax;
+  height: 65vmax;
+  border-radius: 50%;
+  filter: blur(90px);
+  pointer-events: none;
+  z-index: 0;
+  will-change: transform;
+}
+
+/* Blue orb — starts top-left, drifts down-right */
+.landing-gradient::before {
+  background: radial-gradient(circle closest-side, rgba(59, 130, 246, 0.22), transparent 70%);
+  top: -22vmax;
+  left: -12vmax;
+  animation: tundra-a 42s ease-in-out infinite alternate;
+}
+
+/* Cyan orb — starts bottom-right, drifts up-left into the blue */
+.landing-gradient::after {
+  background: radial-gradient(circle closest-side, rgba(34, 211, 238, 0.16), transparent 70%);
+  bottom: -26vmax;
+  right: -12vmax;
+  animation: tundra-b 54s ease-in-out infinite alternate;
+}
+
+/* Mismatched durations mean the orbs continuously shift in and out of
+   overlap — the blend point slowly migrates across the page. */
+@keyframes tundra-a {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(10vw, 14vh, 0) scale(1.12);
+  }
+  100% {
+    transform: translate3d(22vw, 26vh, 0) scale(1.2);
+  }
+}
+
+@keyframes tundra-b {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(-9vw, -12vh, 0) scale(1.08);
+  }
+  100% {
+    transform: translate3d(-20vw, -22vh, 0) scale(1.18);
+  }
+}
+
+* {
+  transition-duration: 150ms;
+}
+
+input,
+textarea,
+select {
+  outline: none;
+  transition-property: border-color, background-color, color, box-shadow;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ---- Motion: subtle, fast, purposeful ---- */
+
+button,
+a {
+  transition-property: color, background-color, border-color, opacity, transform, filter;
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateX(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.anim-fade-in-up {
+  animation: fade-in-up 280ms ease-out both;
+}
+
+.anim-toast-in {
+  animation: toast-in 200ms ease-out both;
+}
+
+.pulse-dot {
+  animation: pulse-dot 1.2s ease-in-out infinite;
+}
+
+.lift {
+  transition-property: transform, border-color, color, background-color;
+}
+.lift:hover {
+  transform: translateY(-2px);
+}
+
+/* Staggered entrance for direct children */
+.stagger > * {
+  animation: fade-in-up 300ms ease-out both;
+}
+.stagger > *:nth-child(1) { animation-delay: 0ms; }
+.stagger > *:nth-child(2) { animation-delay: 45ms; }
+.stagger > *:nth-child(3) { animation-delay: 90ms; }
+.stagger > *:nth-child(4) { animation-delay: 135ms; }
+.stagger > *:nth-child(5) { animation-delay: 180ms; }
+.stagger > *:nth-child(6) { animation-delay: 225ms; }
+.stagger > *:nth-child(7) { animation-delay: 270ms; }
+.stagger > *:nth-child(8) { animation-delay: 315ms; }
+.stagger > *:nth-child(n + 9) { animation-delay: 360ms; }
+
+/* Smooth expand/collapse (FactTrace evidence) */
+.expand-wrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 200ms ease;
+}
+.expand-wrap > div {
+  overflow: hidden;
+  min-height: 0;
+}
+.expand-wrap.open {
+  grid-template-rows: 1fr;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
