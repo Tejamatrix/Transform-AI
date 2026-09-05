@@ -128,6 +128,31 @@ export default function NewTransformation() {
     }
   }
 
+  async function downloadTranscript(sourceId: string, title: string) {
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/sources/${sourceId}/transcript`,
+        { headers: { Authorization: `Bearer ${localStorage.getItem("tai_token")}` } }
+      );
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}));
+        toast(j.detail || "No transcript available for this video.", "error");
+        return;
+      }
+      const j = await res.json();
+      const blob = new Blob([j.transcript], { type: "text/plain" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `transcript_${title.replace(/\.[^.]+$/, "")}.txt`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast("Transcript downloaded.", "success");
+    } catch {
+      toast("Could not download transcript.", "error");
+    }
+  }
+
   async function analyze() {
     if (!project) return;
     const ready = sources.filter((s) => s.status === "ready");
@@ -254,7 +279,7 @@ export default function NewTransformation() {
                   <input
                     ref={fileRef}
                     type="file"
-                    accept=".pdf,.docx,.txt,.png,.jpg,.jpeg,.webp,.mp4,.mov,.webm,.avi,.mkv,.py,.js,.ts,.tsx,.jsx,.java,.c,.h,.cpp,.hpp,.cs,.go,.rs,.rb,.php,.swift,.kt,.sql,.sh,.bat,.ps1,.html,.css,.xml,.json,.yaml,.yml,.r,.scala,.lua,.dart,.ipynb"
+                    accept=".pdf,.docx,.txt,.csv,.png,.jpg,.jpeg,.webp,.mp4,.mov,.webm,.avi,.mkv,.py,.js,.ts,.tsx,.jsx,.java,.c,.h,.cpp,.hpp,.cs,.go,.rs,.rb,.php,.swift,.kt,.sql,.sh,.bat,.ps1,.html,.css,.xml,.json,.yaml,.yml,.r,.scala,.lua,.dart,.ipynb"
                     className="hidden"
                     onChange={(e) => e.target.files?.[0] && addFile(e.target.files[0])}
                   />
@@ -268,9 +293,9 @@ export default function NewTransformation() {
                     </Button>
                   </form>
                   <p className="text-[12px] text-ink-3 mt-3">
-                    PDF, DOCX, TXT · code files (.py .js .java .cpp +25 more — AI explains what the code
-                    does) · images (OCR) · videos (frame text extraction). Up to 25 MB. Text is extracted,
-                    chunked and indexed for grounding.
+                    PDF, DOCX, TXT · CSV (data analysis) · code files (.py .js .java +25 more — AI
+                    explains what the code does) · images (OCR) · videos (Whisper transcript + frame
+                    text). Up to 25 MB. Extracted text is chunked and indexed for grounding.
                   </p>
                 </Card>
               </div>
@@ -289,9 +314,19 @@ export default function NewTransformation() {
                         </div>
                         {s.status === "failed" && <div className="text-[12px] text-error mt-1">{s.error}</div>}
                       </div>
-                      <Badge tone={s.status === "ready" ? "success" : s.status === "failed" ? "error" : "warn"}>
-                        {s.status}
-                      </Badge>
+                      <div className="flex items-center gap-2 shrink-0">
+                        {s.source_type === "video" && s.status === "ready" && (
+                          <button
+                            onClick={() => downloadTranscript(s.id, s.title)}
+                            className="px-2.5 py-1.5 rounded-btn border border-line-subtle text-[12px] text-ink-2 hover:border-line hover:text-ink"
+                          >
+                            Transcript
+                          </button>
+                        )}
+                        <Badge tone={s.status === "ready" ? "success" : s.status === "failed" ? "error" : "warn"}>
+                          {s.status}
+                        </Badge>
+                      </div>
                     </Card>
                   ))}
                   {sources.length === 0 && (

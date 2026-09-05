@@ -173,6 +173,65 @@ class CodeExtractor(BaseExtractor):
         }
 
 
+class CsvExtractor(BaseExtractor):
+    """CSV ingestion: rows rendered as natural-language records the LLM can
+    analyze (trends, totals, outliers). Columns become labeled fields."""
+    source_type = "csv"
+
+    MAX_ROWS = 2000
+
+    def extract(self, data: bytes | str) -> tuple[str, dict]:
+        import csv as _csv
+        import io as _io
+
+        text_in = (data if isinstance(data, str) else data.decode("utf-8-sig", errors="replace"))
+        if not text_in.strip():
+            raise IngestionError("The CSV file is empty.")
+        try:
+            reader = _csv.reader(_io.StringIO(text_in))
+            rows = [r for r in reader if any((c or "").strip() for c in r)]
+        except Exception:
+            raise IngestionError("The CSV file could not be parsed.")
+        if len(rows) < 2:
+            raise IngestionError("The CSV needs a header row and at least one data row.")
+
+        header = [h.strip() for h in rows[0]]
+        data_rows = rows[1:self.MAX_ROWS + 1]
+
+        # numeric summary for the analyzer (columns -> min/max/sum/avg)
+        def _num(v: str):
+            try:
+                return float(str(v).replace(",", ""))
+            except (ValueError, TypeError):
+                return None
+
+        stats: list[str] = []
+        for ci, col in enumerate(header):
+            values = [_num(r[ci]) for r in data_rows if ci < len(r)]
+            nums = [v for v in values if v is not None]
+            if len(nums) >= 2:
+                stats.append(f"{col}: total={sum(nums):.2f}, min={min(nums):.2f}, "
+                             f"max={max(nums):.2f}, average={sum(nums) / len(nums):.2f} (n={len(nums)})")
+
+        parts = [f"Dataset: CSV with {len(data_rows)} records and columns: {', '.join(header)}."]
+        if stats:
+            parts.append("Column statistics:")
+            parts.extend(f"- {s}" for s in stats)
+        parts.append("Records:")
+        for i, r in enumerate(data_rows, 1):
+            fields = [f"{header[ci]}={r[ci].strip()}" for ci in range(min(len(header), len(r)))
+                      if (r[ci] or "").strip()]
+            parts.append(f"{i}. " + "; ".join(fields))
+        text = "\n".join(parts)[:MAX_CHARS]
+
+        return text, {
+            "csv_rows": len(data_rows),
+            "csv_columns": header,
+            "row_count": len(rows) - 1,
+            "truncated_rows": max(0, (len(rows) - 1) - len(data_rows)),
+        }
+
+
 class UrlExtractor(BaseExtractor):
     source_type = "url"
 
@@ -388,7 +447,7 @@ class VideoExtractor(BaseExtractor):
 EXTRACTORS: dict[str, BaseExtractor] = {
     e.source_type: e for e in [
         TextExtractor(), PdfExtractor(), DocxExtractor(), TxtFileExtractor(),
-        UrlExtractor(), ImageExtractor(), VideoExtractor(),
+        UrlExtractor(), ImageExtractor(), VideoExtractor(), CsvExtractor(),
     ]
 }
 
@@ -422,6 +481,7 @@ ALLOWED_UPLOAD_TYPES = {
     "pdf": "pdf",
     "docx": "docx",
     "txt": "txt",
+    "csv": "csv",
     **IMAGE_EXTENSIONS,
     **VIDEO_EXTENSIONS,
     **{ext: "code" for ext in CODE_EXTENSIONS},

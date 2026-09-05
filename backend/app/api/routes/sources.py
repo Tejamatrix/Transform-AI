@@ -11,10 +11,10 @@ from app.core.database import get_db
 from app.api.deps import get_current_user
 from app.models.models import Project, Source, User
 from app.schemas.schemas import TextSourceCreate, SourceOut, SourceDetail
-from app.services.ingestion import get_extractor, get_extractor_for_upload, validate_upload, MAX_UPLOAD_BYTES
+from app.services.ingestion import get_extractor, get_extractor_for_upload, validate_upload
 from app.services import rag
 from app.services.audit import log_action
-from app.utils.errors import NotFoundError, PermissionError_, IngestionError
+from app.utils.errors import NotFoundError, PermissionError_, IngestionError, AppError
 
 router = APIRouter(prefix="/api/sources", tags=["sources"])
 
@@ -157,3 +157,36 @@ def get_source(source_id: str, db: Session = Depends(get_db), user: User = Depen
     cc = db.query(SourceChunk).filter(SourceChunk.source_id == s.id).count()
     d = _out(s, cc)
     return SourceDetail(**d.model_dump(), raw_text=s.raw_text, meta_json=s.meta_json)
+
+
+@router.get("/{source_id}/transcript")
+def get_transcript(source_id: str, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    """Transcript of a video/audio source as a downloadable TXT (Whisper layer)."""
+    import urllib.parse
+
+    s = db.get(Source, source_id)
+    if not s:
+        raise NotFoundError("Source")
+    if s.user_id != user.id:
+        raise PermissionError_()
+
+    text = s.raw_text or ""
+    start = text.find("Spoken audio transcript")
+    if start == -1:
+        raise AppError("This source has no transcript (audio was absent or transcription unavailable).")
+    transcript = text[start + len("Spoken audio transcript (Whisper):"):].strip()
+    # cut before the next section if present (frame OCR block)
+    for marker in ("Text extracted from sampled video frames",):
+        idx = transcript.find(marker)
+        if idx != -1:
+            transcript = transcript[:idx].strip()
+    if not transcript:
+        raise AppError("This source has no transcript content.")
+
+    filename = (s.title or s.filename or "transcript").strip() or "transcript"
+    safe = urllib.parse.quote(f"transcript_{filename}.txt")
+    log_action(db, user.id, s.project_id, "source.transcript_exported", s.title or s.filename)
+    return JSONResponse(
+        content={"filename": safe, "transcript": transcript},
+        headers={"Content-Disposition": f"attachment; filename*=UTF-8''{safe}"},
+    )
