@@ -254,12 +254,12 @@ export default function NewTransformation() {
                   <input
                     ref={fileRef}
                     type="file"
-                    accept=".pdf,.docx,.txt,.png,.jpg,.jpeg,.webp,.mp4,.mov,.webm,.avi,.mkv"
+                    accept=".pdf,.docx,.txt,.png,.jpg,.jpeg,.webp,.mp4,.mov,.webm,.avi,.mkv,.py,.js,.ts,.tsx,.jsx,.java,.c,.h,.cpp,.hpp,.cs,.go,.rs,.rb,.php,.swift,.kt,.sql,.sh,.bat,.ps1,.html,.css,.xml,.json,.yaml,.yml,.r,.scala,.lua,.dart,.ipynb"
                     className="hidden"
                     onChange={(e) => e.target.files?.[0] && addFile(e.target.files[0])}
                   />
                   <Button variant="secondary" className="w-full" onClick={() => fileRef.current?.click()}>
-                    Upload document, image or video
+                    Upload document, code, image or video
                   </Button>
                   <form onSubmit={addUrl} className="flex gap-2 mt-3">
                     <Input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://…" />
@@ -268,8 +268,9 @@ export default function NewTransformation() {
                     </Button>
                   </form>
                   <p className="text-[12px] text-ink-3 mt-3">
-                    PDF, DOCX, TXT, images (OCR) and videos (frame text extraction) up to 25 MB.
-                    Text is extracted, chunked and indexed for grounding.
+                    PDF, DOCX, TXT · code files (.py .js .java .cpp +25 more — AI explains what the code
+                    does) · images (OCR) · videos (frame text extraction). Up to 25 MB. Text is extracted,
+                    chunked and indexed for grounding.
                   </p>
                 </Card>
               </div>
