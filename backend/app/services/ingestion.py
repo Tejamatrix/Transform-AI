@@ -41,6 +41,49 @@ def _find_ffprobe() -> str | None:
     return shutil.which("ffprobe") or shutil.which("ffmpeg")
 
 
+def _transcribe_audio(video_path: str) -> str | None:
+    """Extract the audio track via FFmpeg and transcribe it with a Whisper
+    model on the configured OpenAI-compatible gateway (Groq). Returns None
+    when audio is absent or transcription is unavailable — never blocks."""
+    ffmpeg = shutil.which("ffmpeg")
+    api_key = settings.GLM_API_KEY or settings.OPENAI_API_KEY
+    if not ffmpeg or not api_key:
+        return None
+
+    import tempfile
+    tmp = tempfile.NamedTemporaryFile(suffix=".mp3", delete=False)
+    tmp.close()
+    try:
+        # 16 kHz mono MP3: small upload, transcription-grade quality
+        proc = subprocess.run(
+            [ffmpeg, "-y", "-v", "quiet", "-i", video_path, "-vn",
+             "-ac", "1", "-ar", "16000", "-b:a", "48k", tmp.name],
+            capture_output=True, timeout=300,
+        )
+        if proc.returncode != 0 or not os.path.exists(tmp.name) or os.path.getsize(tmp.name) < 1024:
+            return None  # no usable audio track
+
+        base = settings.OPENAI_BASE_URL.rstrip("/")
+        with open(tmp.name, "rb") as f:
+            resp = httpx.post(
+                f"{base}/audio/transcriptions",
+                headers={"Authorization": f"Bearer {api_key}"},
+                files={"file": ("audio.mp3", f, "audio/mpeg")},
+                data={"model": "whisper-large-v3-turbo"},
+                timeout=600,
+            )
+        if resp.status_code != 200:
+            return None
+        return (resp.json().get("text") or "").strip() or None
+    except Exception:
+        return None
+    finally:
+        try:
+            os.unlink(tmp.name)
+        except OSError:
+            pass
+
+
 class BaseExtractor(ABC):
     source_type: str = "base"
 
@@ -279,6 +322,9 @@ class VideoExtractor(BaseExtractor):
             frames_dir = os.path.join(tmp_dir, "frames")
             os.makedirs(frames_dir, exist_ok=True)
 
+            # spoken-audio transcript via Whisper (when audio + API available)
+            transcript = _transcribe_audio(video_path)
+
             # sample frames at evenly spaced timestamps (skip first/last second)
             n = self.FRAME_COUNT
             start = min(1.0, duration * 0.05)
@@ -315,13 +361,15 @@ class VideoExtractor(BaseExtractor):
 
             parts = [f"Video metadata: duration {int(duration)}s, resolution {width}x{height}, "
                      f"audio {'present' if has_audio else 'absent'}."]
+            if transcript:
+                parts.append("Spoken audio transcript (Whisper):")
+                parts.append(transcript[:80000])
             if frame_texts:
                 parts.append("Text extracted from sampled video frames (OCR):")
                 parts.extend(frame_texts)
-            else:
-                parts.append("No readable on-screen text was found in the sampled frames; "
-                             "the video content is described only by metadata. "
-                             "Note: spoken audio transcription is not yet available.")
+            if not transcript and not frame_texts:
+                parts.append("No transcribable audio or readable on-screen text was found in the "
+                             "sampled frames; the video content is described only by metadata.")
             text = "\n\n".join(parts)[:MAX_CHARS]
 
             return text, {
@@ -330,7 +378,8 @@ class VideoExtractor(BaseExtractor):
                 "video_has_audio": has_audio,
                 "frames_sampled": len(timestamps),
                 "frames_with_text": len(frame_texts),
-                "ocr": True,
+                "transcribed": bool(transcript),
+                "ocr": bool(frame_texts),
             }
         finally:
             shutil.rmtree(tmp_dir, ignore_errors=True)
