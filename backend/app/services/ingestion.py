@@ -101,6 +101,35 @@ class TxtFileExtractor(TextExtractor):
     source_type = "txt"
 
 
+CODE_EXTENSIONS = {
+    "py": "python", "js": "javascript", "ts": "typescript", "tsx": "typescript",
+    "jsx": "javascript", "java": "java", "c": "c", "h": "c", "cpp": "c++", "hpp": "c++",
+    "cs": "c#", "go": "go", "rs": "rust", "rb": "ruby", "php": "php", "swift": "swift",
+    "kt": "kotlin", "sql": "sql", "sh": "shell", "bat": "batch", "ps1": "powershell",
+    "html": "html", "css": "css", "xml": "xml", "json": "json", "yaml": "yaml",
+    "yml": "yaml", "r": "r", "scala": "scala", "lua": "lua", "dart": "dart", "ipynb": "jupyter",
+}
+
+
+class CodeExtractor(BaseExtractor):
+    """Source-code ingestion: read as text, tag with detected language."""
+    source_type = "code"
+
+    def __init__(self, language: str = "unknown"):
+        self.language = language
+
+    def extract(self, data: bytes | str) -> tuple[str, dict]:
+        text = (data if isinstance(data, str) else data.decode("utf-8", errors="replace")).strip()
+        if not text:
+            raise IngestionError("The code file is empty.")
+        lines = text.count("\n") + 1
+        return text[:MAX_CHARS], {
+            "code_language": self.language,
+            "line_count": lines,
+            "char_count": len(text),
+        }
+
+
 class UrlExtractor(BaseExtractor):
     source_type = "url"
 
@@ -319,6 +348,18 @@ def register_extractor(ext: BaseExtractor) -> None:
     EXTRACTORS[ext.source_type] = ext
 
 
+def get_extractor_for_upload(filename: str) -> BaseExtractor:
+    """Pick the extractor for an uploaded file by extension (code files are
+    language-specific extractor instances)."""
+    ext = filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
+    if ext in CODE_EXTENSIONS:
+        return CodeExtractor(language=CODE_EXTENSIONS[ext])
+    source_type = ALLOWED_UPLOAD_TYPES.get(ext)
+    if not source_type:
+        raise IngestionError(f"Unsupported file type '.{ext}'.")
+    return get_extractor(source_type)
+
+
 def get_extractor(source_type: str) -> BaseExtractor:
     ext = EXTRACTORS.get(source_type)
     if ext is None:
@@ -334,6 +375,7 @@ ALLOWED_UPLOAD_TYPES = {
     "txt": "txt",
     **IMAGE_EXTENSIONS,
     **VIDEO_EXTENSIONS,
+    **{ext: "code" for ext in CODE_EXTENSIONS},
 }
 MAX_UPLOAD_BYTES = settings.MAX_UPLOAD_MB * 1024 * 1024
 
@@ -344,7 +386,8 @@ def validate_upload(filename: str, size: int, content_type: str) -> str:
     source_type = ALLOWED_UPLOAD_TYPES.get(ext)
     if not source_type:
         raise IngestionError(
-            f"Unsupported file type '.{ext}'. Supported: PDF, DOCX, TXT, PNG, JPG, WebP, MP4, MOV, WebM."
+            f"Unsupported file type '.{ext}'. Supported: PDF, DOCX, TXT, code files "
+            f"(py, js, java, ...), PNG, JPG, WebP, MP4, MOV, WebM."
         )
     if size > MAX_UPLOAD_BYTES:
         raise IngestionError(f"File exceeds the {settings.MAX_UPLOAD_MB} MB limit.")

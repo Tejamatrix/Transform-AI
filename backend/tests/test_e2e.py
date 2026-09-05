@@ -112,7 +112,7 @@ job_id = r.json()["id"]
 
 import time
 outputs = []
-for _ in range(60):
+for _ in range(90):
     time.sleep(0.5)
     r = client.get(f"/api/generate/job/{job_id}", headers=H)
     if r.json().get("status") in ("completed", "failed"):

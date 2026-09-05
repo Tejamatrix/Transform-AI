@@ -11,7 +11,7 @@ from app.core.database import get_db
 from app.api.deps import get_current_user
 from app.models.models import Project, Source, User
 from app.schemas.schemas import TextSourceCreate, SourceOut, SourceDetail
-from app.services.ingestion import get_extractor, validate_upload, MAX_UPLOAD_BYTES
+from app.services.ingestion import get_extractor, get_extractor_for_upload, validate_upload, MAX_UPLOAD_BYTES
 from app.services import rag
 from app.services.audit import log_action
 from app.utils.errors import NotFoundError, PermissionError_, IngestionError
@@ -37,10 +37,14 @@ def _out(s: Source, chunk_count: int = 0) -> SourceOut:
     )
 
 
-def _process(db: Session, source: Source, data: bytes | str, source_type: str, user: User):
+def _process(db: Session, source: Source, data: bytes | str, source_type: str, user: User,
+             filename: str = ""):
     """Extract -> chunk -> embed -> ready (synchronous for MVP; queue-compatible)."""
     try:
-        extractor = get_extractor(source_type)
+        if source_type == "code" and filename:
+            extractor = get_extractor_for_upload(filename)
+        else:
+            extractor = get_extractor(source_type)
         text, meta = extractor.extract(data)
         source.raw_text = text
         source.title = source.title or meta.get("title") or source.filename or source_type.title()
@@ -82,7 +86,7 @@ async def upload_source(
     db.commit()
     db.refresh(source)
     log_action(db, user.id, project.id, "source.uploaded", file.filename or "")
-    _process(db, source, data, ext, user)
+    _process(db, source, data, ext, user, filename=file.filename or "")
     db.refresh(source)
     from app.models.models import SourceChunk
     cc = db.query(SourceChunk).filter(SourceChunk.source_id == source.id).count()

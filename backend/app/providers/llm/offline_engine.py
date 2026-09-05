@@ -538,10 +538,28 @@ def offline_generate(system_prompt: str, user_prompt: str) -> dict:
     m = re.search(r"TASK=([a-z_:]+)", system_prompt)
     task = m.group(1) if m else ""
 
-    if task == "analyzer":
+    if task in ("analyzer", "code_analyzer"):
         text = blocks.get("SOURCE", "") or blocks.get("EVIDENCE", "") or user_prompt
-        title_m = re.search(r"### SOURCE: (.+?) \(id=", text)
-        return run_analyzer(text, title_m.group(1) if title_m else "Source")
+        title_m = re.search(r"### (?:SOURCE|CODE): (.+?) \(", text)
+        result = run_analyzer(text, title_m.group(1) if title_m else "Source")
+        if task == "code_analyzer":
+            # code-aware framing for the offline fallback
+            lang_m = re.search(r"language=([a-z+#]+)", text)
+            lang = lang_m.group(1) if lang_m else "unknown"
+            lines = text.count("\n") + 1
+            funcs = len(re.findall(r"(?:def |function |class |func |public |private )\w+", text))
+            imports = re.findall(r"(?:import|from|#include|using)\s+[\w.<>]+", text)[:12]
+            result["domain"] = "software"
+            result["intent"] = "report"
+            result["summary"] = (
+                f"A {lang} source file of approximately {lines} lines containing {funcs} "
+                f"functions, classes or methods. "
+                + ("It imports: " + ", ".join(imports[:6]) + ". " if imports else "")
+                + "Configure a live LLM provider for a full functional description of this code."
+            )
+            result["statistics"] = [f"{lines} lines", f"{funcs} functions/classes"]
+            result["entities"] = [{"name": imp.split()[-1], "type": "Technology", "description": "import"} for imp in imports[:10]]
+        return result
 
     if task.startswith("generate:"):
         bp = _load_json(blocks.get("BLUEPRINT", "{}"), {})

@@ -119,17 +119,28 @@ def analyze_project(db: Session, project_id: str, user_id: str) -> Blueprint:
     evidence = rag.retrieve(db, project_id, query_base[:500], k=12)
 
     ref_map = {e["source_id"]: e for e in evidence}
+    # Code sources use a dedicated analyzer prompt (explains what the code does)
+    has_code = any(s.source_type == "code" for s in sources)
+    all_code = all(s.source_type == "code" for s in sources)
+    prompt_name = "code_analyzer" if all_code else "analyzer"
+    code_block = ""
+    if has_code:
+        code_block = "\n\n".join(
+            f"### CODE: {s.title or s.filename} (language={s.meta_json.get('code_language', 'unknown')})\n"
+            f"```\n{s.raw_text[:10000]}\n```"
+            for s in sources if s.source_type == "code"
+        )
     source_block = "\n\n".join(
         f"### SOURCE: {s.title or s.filename} (id={s.id}, type={s.source_type})\n{s.raw_text[:12000]}"
-        for s in sources
-    )
+        for s in sources if s.source_type != "code"
+    ) + code_block
     evidence_block = "\n\n".join(
         f"[{e['source_title']} | page {e['page']} | para {e['paragraph']}]\n{e['text'][:600]}"
         for e in evidence
     )
 
     system, user = prompts.render(
-        "analyzer", 1,
+        prompt_name, 1,
         SOURCE=source_block,
         EVIDENCE=evidence_block,
     )
