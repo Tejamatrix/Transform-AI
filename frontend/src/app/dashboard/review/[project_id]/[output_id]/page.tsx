@@ -116,7 +116,7 @@ export default function OutputDetailPage() {
   const s = validation.summary || {};
   const groundingClaims = validation.grounding?.claims || [];
   const exportFormats = [
-    "md", "docx", "txt",
+    "md", "docx", "pdf", "html", "json", "csv", "txt",
     ...(output.output_type === "presentation" ? ["pptx"] : []),
     ...(output.output_type === "video_package" ? ["srt"] : []),
   ];
@@ -146,9 +146,13 @@ export default function OutputDetailPage() {
             <Badge>{String(output.config.language || "")}</Badge>
           </div>
         </div>
-        <div className="flex gap-2 shrink-0">
+        <div className="flex gap-1.5 shrink-0 flex-wrap justify-end max-w-2xl">
+          <Button variant="ghost" className="!h-9 !px-3 !text-[13px] xl:hidden" onClick={() => setAgentOpen(!agentOpen)}>
+            {agentOpen ? "Hide assistant" : "Ask AI"}
+          </Button>
+          <span className="text-[11px] text-ink-3 self-center mr-1 hidden sm:inline">Export:</span>
           {exportFormats.map((f) => (
-            <Button key={f} variant="secondary" loading={busy === `export-${f}`} onClick={() => doExport(f)}>
+            <Button key={f} variant="secondary" className="!h-9 !px-3 !text-[13px]" loading={busy === `export-${f}`} onClick={() => doExport(f)}>
               {f.toUpperCase()}
             </Button>
           ))}
@@ -312,6 +316,13 @@ export default function OutputDetailPage() {
               </Badge>
             </Card>
           ))}
+        </div>
+      )}
+
+      {/* AI assistant inline on smaller screens (side panel handles xl+) */}
+      {agentOpen && (
+        <div className="xl:hidden">
+          <AgentPanel projectId={output.project_id} onClose={() => setAgentOpen(false)} />
         </div>
       )}
         </div>

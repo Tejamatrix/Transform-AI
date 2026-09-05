@@ -29,15 +29,17 @@ export default function SettingsPage() {
         <p className="text-[12px] text-ink-3 mt-3">
           {live ? (
             <>
-              Live generation via <code className="text-ink-2">{health?.llm_model}</code> through the b.ai gateway.
-              If the live provider is unavailable (quota, rate limit, timeout), requests automatically fall back to
-              the deterministic offline engine — the platform never blocks.
+              Live generation via <code className="text-ink-2">{health?.llm_model}</code> through an
+              OpenAI-compatible gateway (Groq). If the live provider is unavailable (quota, rate limit,
+              timeout), requests automatically fall back to the deterministic offline engine — the
+              platform never blocks.
             </>
           ) : (
             <>
-              The offline AI engine runs fully deterministic analysis and generation without external API keys.
-              Configure <code className="text-ink-2">LLM_PROVIDER=openai</code> with an API key on the server to
-              upgrade generation quality — no code changes required.
+              The offline AI engine runs fully deterministic analysis and generation without external
+              API keys. Configure <code className="text-ink-2">LLM_PROVIDER=openai</code> with an API key
+              in <code className="text-ink-2">backend/.env</code> to upgrade generation quality — no code
+              changes required.
             </>
           )}
         </p>

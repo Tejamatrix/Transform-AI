@@ -242,7 +242,7 @@ class ValidationOut(BaseModel):
 # ---------- Export ----------
 
 class ExportRequest(BaseModel):
-    format: Literal["txt", "md", "docx", "srt", "pdf", "pptx"]
+    format: Literal["txt", "md", "docx", "srt", "pdf", "pptx", "html", "json", "csv"]
 
 
 # ---------- Generic ----------

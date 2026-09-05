@@ -42,7 +42,7 @@ class OpenAIProvider(LLMProvider):
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt},
             ],
-            "temperature": 0.3,
+            "temperature": 0.1,
             "response_format": {"type": "json_object"},
         }
         headers = {"Authorization": f"Bearer {settings.GLM_API_KEY or settings.OPENAI_API_KEY}"}

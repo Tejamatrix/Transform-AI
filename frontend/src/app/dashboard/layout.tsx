@@ -48,6 +48,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           })}
         </nav>
         <div className="px-3 py-4 border-t border-line-subtle">
+          <div className="px-3 text-[11px] text-ink-3 mb-2">TransformAI v1.0</div>
           <button
             onClick={logout}
             className="w-full px-3 h-10 flex items-center rounded-btn text-[14px] text-ink-2 hover:text-ink hover:bg-elevated"

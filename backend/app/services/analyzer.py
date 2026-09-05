@@ -35,6 +35,78 @@ def _source_ref_payload(source: Source, chunk: dict | None) -> dict:
     }
 
 
+def _normalize_raw(raw: dict) -> dict:
+    """Repair common LLM deviations so a live provider's near-miss JSON still
+    validates instead of failing the analysis (strings-as-objects, bad
+    numerics, scalar lists, etc.)."""
+    if not isinstance(raw, dict):
+        return {}
+
+    # entities: str -> {name, type}
+    ents = []
+    for e in raw.get("entities") or []:
+        if isinstance(e, str) and e.strip():
+            ents.append({"name": e.strip()[:120], "type": "Entity", "description": ""})
+        elif isinstance(e, dict) and str(e.get("name", "")).strip():
+            ents.append({"name": str(e["name"])[:120], "type": str(e.get("type", "Entity"))[:40],
+                         "description": str(e.get("description", ""))[:300]})
+    raw["entities"] = ents[:40]
+
+    # key_facts: str -> {text, source_refs}
+    facts = []
+    for f in raw.get("key_facts") or []:
+        if isinstance(f, str) and f.strip():
+            facts.append({"text": f.strip()[:600], "source_refs": []})
+        elif isinstance(f, dict) and str(f.get("text", "")).strip():
+            refs = f.get("source_refs") if isinstance(f.get("source_refs"), list) else []
+            facts.append({"text": str(f["text"])[:600], "source_refs": refs})
+    raw["key_facts"] = facts[:40]
+
+    # scalar string lists
+    for key in ("statistics", "risks", "recommendations", "important_quotes", "recommended_outputs"):
+        val = raw.get(key)
+        if isinstance(val, str):
+            val = [val]
+        if not isinstance(val, list):
+            val = []
+        raw[key] = [str(x)[:500] for x in val if x][:24]
+
+    # timeline entries
+    tl = []
+    for t in raw.get("timeline") or []:
+        if isinstance(t, str) and t.strip():
+            tl.append({"date": "", "label": "", "event": t.strip()[:300]})
+        elif isinstance(t, dict) and (t.get("event") or t.get("date")):
+            tl.append({"date": str(t.get("date", ""))[:32], "label": str(t.get("label", ""))[:120],
+                       "event": str(t.get("event", ""))[:300]})
+    raw["timeline"] = tl[:24]
+
+    # conflicts must be dicts
+    raw["conflicts"] = [c for c in (raw.get("conflicts") or []) if isinstance(c, dict)][:10]
+
+    # source_references must be dicts with a quote
+    refs = []
+    for r in raw.get("source_references") or []:
+        if isinstance(r, dict):
+            refs.append({"source_id": str(r.get("source_id", "")), "source_title": str(r.get("source_title", ""))[:200],
+                         "page": int(r.get("page", 0) or 0), "section": str(r.get("section", ""))[:120],
+                         "paragraph": int(r.get("paragraph", 0) or 0), "chunk_index": int(r.get("chunk_index", 0) or 0),
+                         "quote": str(r.get("quote", ""))[:300]})
+    raw["source_references"] = refs[:12]
+
+    # scalars
+    raw["summary"] = str(raw.get("summary", "") or "")[:4000]
+    raw["domain"] = str(raw.get("domain", "general") or "general")[:40]
+    raw["intent"] = str(raw.get("intent", "inform") or "inform")[:40]
+    raw["audience"] = str(raw.get("audience", "") or "")[:120]
+    raw["communication_objective"] = str(raw.get("communication_objective", "") or "")[:60]
+    try:
+        raw["confidence"] = max(0.0, min(1.0, float(raw.get("confidence", 0.7) or 0.7)))
+    except (TypeError, ValueError):
+        raw["confidence"] = 0.7
+    return raw
+
+
 def analyze_project(db: Session, project_id: str, user_id: str) -> Blueprint:
     project = _own_project(db, project_id, user_id)
     sources = db.query(Source).filter(Source.project_id == project_id, Source.status == "ready").all()
@@ -69,8 +141,9 @@ def analyze_project(db: Session, project_id: str, user_id: str) -> Blueprint:
     except Exception:
         raise AppError("Analysis failed. Please retry.", 502)
 
-    # Enforce schema; fill source references deterministically from retrieval
+    # Enforce schema; auto-repair common live-LLM deviations first.
     try:
+        raw = _normalize_raw(raw if isinstance(raw, dict) else {})
         content = BlueprintContent(**{k: v for k, v in raw.items() if k in BlueprintContent.model_fields})
     except Exception:
         raise AppError("Analyzer returned an invalid structure. Please retry.", 502)
