@@ -3,25 +3,26 @@
 @tailwind utilities;
 
 :root {
-  /* Color tokens — Modern fintech SaaS: mint / off-white / charcoal / teal */
-  --bg: #FAF8F3;            /* warm off-white background */
+  /* Color tokens — fintech SaaS: seafoam mint / sage / cream / teal / charcoal */
+  --bg: #EEF3ED;            /* very light sage background */
   --surface: #FFFFFF;       /* cards */
-  --elevated: #F1F7F3;      /* pale mint wash */
-  --cream: #F6F1E7;         /* soft cream highlight */
-  --line: #E2E8E2;          /* mint-gray border */
-  --line-subtle: #ECE9E1;   /* warm subtle border */
+  --elevated: #E3EEE6;      /* soft seafoam wash */
+  --cream: #F4EEDC;         /* soft cream */
+  --line: #D8E2D8;          /* sage-gray border */
+  --line-subtle: #E4E9E1;   /* subtle border */
   --input-bg: #FFFFFF;
-  --ink: #232620;           /* dark charcoal text */
-  --ink-2: #5C6259;         /* secondary text */
-  --ink-3: #8B9187;         /* muted text */
-  --accent: #0D9488;        /* vibrant teal — interactive elements */
-  --accent-strong: #0B7C72;
-  --mint: #BFEAD9;          /* mint green brand */
-  --mint-soft: #E6F6EF;     /* soft mint fill */
-  --turquoise: #14B8A6;
-  --error: #DC2626;
-  --success: #15803D;
-  --warn: #B45309;
+  --ink: #3F4743;           /* dark charcoal text */
+  --ink-2: #6A726C;         /* secondary text */
+  --ink-3: #98A099;         /* muted text */
+  --accent: #18B7A5;        /* teal — interactive elements */
+  --accent-strong: #0F9C8C;
+  --mint: #59B99B;          /* primary mint / seafoam */
+  --mint-soft: #DFF0E7;     /* soft mint fill */
+  --turquoise: #18B7A5;
+  --highlight: #F5EFCF;     /* pale yellow/cream highlight */
+  --error: #D2544A;
+  --success: #3E8E5C;
+  --warn: #C08A2D;
 }
 
 html,
@@ -53,7 +54,7 @@ select:focus {
 }
 
 ::selection {
-  background: var(--mint);
+  background: var(--mint-soft);
   color: var(--ink);
 }
 
@@ -62,7 +63,7 @@ select:focus {
   height: 10px;
 }
 ::-webkit-scrollbar-thumb {
-  background: #CDD6CF;
+  background: #C4D2C6;
   border-radius: 8px;
 }
 ::-webkit-scrollbar-track {

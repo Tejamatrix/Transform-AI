@@ -103,8 +103,8 @@ export default function Landing() {
             <div className="float-slower absolute -top-6 -right-4 w-24 h-24 bg-mint blob opacity-70" aria-hidden />
             <div className="relative bg-surface rounded-card border border-line-subtle shadow-lift p-6 rotate-1">
               <div className="flex items-center gap-1.5 mb-4">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#F5C6C6]" />
-                <span className="w-2.5 h-2.5 rounded-full bg-[#F6E3B4]" />
+                <span className="w-2.5 h-2.5 rounded-full bg-[#F0C9C5]" />
+                <span className="w-2.5 h-2.5 rounded-full bg-highlight" />
                 <span className="w-2.5 h-2.5 rounded-full bg-mint" />
               </div>
               <div className="text-[12px] text-ink-3 mb-1">TRANSFORMATION BLUEPRINT</div>
