@@ -4,7 +4,6 @@ import { InputHTMLAttributes, TextareaHTMLAttributes, SelectHTMLAttributes, forw
 
 const base =
   "w-full bg-input border border-line rounded-btn px-3 text-[14px] text-ink placeholder:text-ink-3 focus:border-accent disabled:opacity-50";
-
 export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(
   function Input({ className = "", ...rest }, ref) {
     return <input ref={ref} className={`${base} h-12 ${className}`} {...rest} />;

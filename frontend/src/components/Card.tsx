@@ -10,7 +10,7 @@ export function Card({
   onClick?: () => void;
 }) {
   const base =
-    "bg-surface border border-line-subtle rounded-card p-4 anim-fade-in-up";
+    "bg-surface border border-line-subtle rounded-card p-4 anim-fade-in-up shadow-soft";
   if (onClick) {
     return (
       <div
@@ -18,7 +18,7 @@ export function Card({
         tabIndex={0}
         onClick={onClick}
         onKeyDown={(e) => e.key === "Enter" && onClick()}
-        className={`${base} cursor-pointer hover:border-line lift ${className}`}
+        className={`${base} cursor-pointer hover:border-accent/40 lift ${className}`}
       >
         {children}
       </div>
@@ -39,7 +39,7 @@ export function SectionTitle({ children, action }: { children: ReactNode; action
 export function Stat({ label, value, tone = "default" }: { label: string; value: string | number; tone?: "default" | "accent" | "error" | "success" | "warn" }) {
   const colors = {
     default: "text-ink",
-    accent: "text-accent",
+    accent: "text-accent-strong",
     error: "text-error",
     success: "text-success",
     warn: "text-warn",

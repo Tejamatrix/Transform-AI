@@ -22,8 +22,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   };
 
   return (
-    <div className="min-h-screen flex">
-      <aside className="w-60 shrink-0 border-r border-line-subtle bg-bg flex flex-col h-screen sticky top-0">
+    <div className="min-h-screen flex bg-bg">
+      <aside className="w-60 shrink-0 border-r border-line-subtle bg-surface flex flex-col h-screen sticky top-0">
         <div className="px-5 h-16 flex items-center border-b border-line-subtle">
           <Link href="/dashboard" className="text-[15px] font-semibold text-ink">
             Transform<span className="text-accent">AI</span>
@@ -39,7 +39,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 key={item.href}
                 href={item.href}
                 className={`px-3 h-10 flex items-center rounded-btn text-[14px] ${
-                  active ? "bg-elevated text-ink font-medium" : "text-ink-2 hover:text-ink hover:bg-elevated"
+                  active ? "bg-mint-soft text-accent-strong font-medium" : "text-ink-2 hover:text-ink hover:bg-elevated"
                 }`}
               >
                 {item.label}
@@ -58,7 +58,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       </aside>
       <main className="flex-1 min-w-0">
-        <header className="h-16 border-b border-line-subtle flex items-center px-8 sticky top-0 bg-bg z-10">
+        <header className="h-16 border-b border-line-subtle flex items-center px-8 sticky top-0 bg-bg/80 backdrop-blur z-10">
           <h1 className="text-[15px] font-medium text-ink-2">
             {NAV.find((n) => (n.exact ? pathname === n.href : pathname.startsWith(n.href)))?.label ||
               "Workspace"}

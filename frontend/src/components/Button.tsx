@@ -10,11 +10,11 @@ interface Props extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const styles: Record<Variant, string> = {
-  primary: "bg-accent text-white hover:brightness-110 disabled:opacity-40",
+  primary: "bg-accent text-white hover:bg-accent-strong shadow-soft disabled:opacity-40",
   secondary:
-    "bg-transparent text-ink border border-[#2A2A2E] hover:bg-elevated disabled:opacity-40",
+    "bg-surface text-ink border border-line hover:border-accent/40 hover:shadow-soft disabled:opacity-40",
   danger: "bg-error text-white hover:brightness-110 disabled:opacity-40",
-  ghost: "bg-transparent text-ink-2 hover:text-ink hover:bg-elevated",
+  ghost: "bg-transparent text-ink-2 hover:bg-elevated hover:text-ink",
 };
 
 export const Button = forwardRef<HTMLButtonElement, Props>(function Button(

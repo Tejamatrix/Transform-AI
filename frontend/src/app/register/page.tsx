@@ -38,16 +38,18 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
-      <div className="w-full max-w-sm">
+    <div className="min-h-screen flex items-center justify-center px-4 bg-bg relative overflow-hidden">
+      <div className="absolute -top-32 -right-32 w-96 h-96 bg-cream blob" aria-hidden />
+      <div className="absolute -bottom-40 -left-24 w-[28rem] h-[28rem] bg-mint-soft blob" style={{ animationDelay: "-7s" }} aria-hidden />
+      <div className="w-full max-w-sm relative">
         <div className="text-center mb-8">
-          <Link href="/" className="text-[17px] font-semibold">
+          <Link href="/" className="text-[17px] font-bold tracking-tight">
             Transform<span className="text-accent">AI</span>
           </Link>
-          <h1 className="mt-6 text-xl font-semibold">Create account</h1>
-          <p className="mt-1 text-[13px] text-ink-2">Operator access to the platform</p>
+          <h1 className="mt-6 text-xl font-semibold">Create your account</h1>
+          <p className="mt-1 text-[13px] text-ink-2">Start transforming in minutes</p>
         </div>
-        <form onSubmit={submit} className="bg-surface border border-line-subtle rounded-card p-6 flex flex-col gap-4">
+        <form onSubmit={submit} className="bg-surface border border-line-subtle rounded-card p-6 flex flex-col gap-4 shadow-soft">
           <Field label="Full name">
             <Input required value={name} onChange={(e) => setName(e.target.value)} placeholder="Priya Sharma" />
           </Field>
@@ -77,7 +79,7 @@ export default function RegisterPage() {
           </Button>
           <p className="text-[13px] text-ink-2 text-center">
             Already registered?{" "}
-            <Link href="/login" className="text-accent hover:brightness-110">
+            <Link href="/login" className="text-accent-strong font-medium hover:brightness-110">
               Sign in
             </Link>
           </p>

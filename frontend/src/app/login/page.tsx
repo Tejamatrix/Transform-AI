@@ -5,8 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { api, setToken } from "@/lib/api";
 import { Button } from "@/components/Button";
-import { Input, Field } from "@/components/Input";
-import { useToast } from "@/components/Input";
+import { Input, Field, useToast } from "@/components/Input";
 
 type AuthResponse = { access_token: string };
 
@@ -34,16 +33,18 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
-      <div className="w-full max-w-sm">
+    <div className="min-h-screen flex items-center justify-center px-4 bg-bg relative overflow-hidden">
+      <div className="absolute -top-32 -left-32 w-96 h-96 bg-mint-soft blob" aria-hidden />
+      <div className="absolute -bottom-40 -right-24 w-[28rem] h-[28rem] bg-cream blob" style={{ animationDelay: "-7s" }} aria-hidden />
+      <div className="w-full max-w-sm relative">
         <div className="text-center mb-8">
-          <Link href="/" className="text-[17px] font-semibold">
+          <Link href="/" className="text-[17px] font-bold tracking-tight">
             Transform<span className="text-accent">AI</span>
           </Link>
-          <h1 className="mt-6 text-xl font-semibold">Sign in</h1>
-          <p className="mt-1 text-[13px] text-ink-2">Access your transformation workspace</p>
+          <h1 className="mt-6 text-xl font-semibold">Welcome back</h1>
+          <p className="mt-1 text-[13px] text-ink-2">Sign in to your transformation workspace</p>
         </div>
-        <form onSubmit={submit} className="bg-surface border border-line-subtle rounded-card p-6 flex flex-col gap-4">
+        <form onSubmit={submit} className="bg-surface border border-line-subtle rounded-card p-6 flex flex-col gap-4 shadow-soft">
           <Field label="Email">
             <Input
               type="email"
@@ -69,7 +70,7 @@ export default function LoginPage() {
           </Button>
           <p className="text-[13px] text-ink-2 text-center">
             No account?{" "}
-            <Link href="/register" className="text-accent hover:brightness-110">
+            <Link href="/register" className="text-accent-strong font-medium hover:brightness-110">
               Create one
             </Link>
           </p>

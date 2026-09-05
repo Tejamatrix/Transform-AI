@@ -3,20 +3,25 @@
 @tailwind utilities;
 
 :root {
-  /* Color tokens — identical across platforms */
-  --bg: #0B0B0C;
-  --surface: #121214;
-  --elevated: #1A1A1D;
-  --line: #232326;
-  --line-subtle: #1F1F23;
-  --input-bg: #0F0F11;
-  --ink: #FFFFFF;
-  --ink-2: #A1A1AA;
-  --ink-3: #6B7280;
-  --accent: #3B82F6;
+  /* Color tokens — Modern fintech SaaS: mint / off-white / charcoal / teal */
+  --bg: #FAF8F3;            /* warm off-white background */
+  --surface: #FFFFFF;       /* cards */
+  --elevated: #F1F7F3;      /* pale mint wash */
+  --cream: #F6F1E7;         /* soft cream highlight */
+  --line: #E2E8E2;          /* mint-gray border */
+  --line-subtle: #ECE9E1;   /* warm subtle border */
+  --input-bg: #FFFFFF;
+  --ink: #232620;           /* dark charcoal text */
+  --ink-2: #5C6259;         /* secondary text */
+  --ink-3: #8B9187;         /* muted text */
+  --accent: #0D9488;        /* vibrant teal — interactive elements */
+  --accent-strong: #0B7C72;
+  --mint: #BFEAD9;          /* mint green brand */
+  --mint-soft: #E6F6EF;     /* soft mint fill */
+  --turquoise: #14B8A6;
   --error: #DC2626;
-  --success: #16A34A;
-  --warn: #D97706;
+  --success: #15803D;
+  --warn: #B45309;
 }
 
 html,
@@ -27,83 +32,6 @@ body {
   font-size: 15px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
-}
-
-/* Controlled hero gradient — landing page ONLY. Never use inside app UI. */
-.hero-glow {
-  background:
-    radial-gradient(circle at 30% 20%, rgba(59, 130, 246, 0.25), transparent 40%),
-    radial-gradient(circle at 70% 80%, rgba(34, 211, 238, 0.20), transparent 40%),
-    #0B0B0C;
-}
-
-/* Full-page Electric Tundra — initial landing page only.
-   Two blurred orbs drift slowly and overlap, blending into one living wash.
-   Production-safe: low opacity over the dark base, flat UI on top. */
-.landing-gradient {
-  position: relative;
-  background: #0B0B0C;
-  overflow: hidden;
-}
-
-.landing-gradient > * {
-  position: relative;
-  z-index: 1;
-}
-
-.landing-gradient::before,
-.landing-gradient::after {
-  content: "";
-  position: absolute;
-  width: 65vmax;
-  height: 65vmax;
-  border-radius: 50%;
-  filter: blur(90px);
-  pointer-events: none;
-  z-index: 0;
-  will-change: transform;
-}
-
-/* Blue orb — starts top-left, drifts down-right */
-.landing-gradient::before {
-  background: radial-gradient(circle closest-side, rgba(59, 130, 246, 0.22), transparent 70%);
-  top: -22vmax;
-  left: -12vmax;
-  animation: tundra-a 42s ease-in-out infinite alternate;
-}
-
-/* Cyan orb — starts bottom-right, drifts up-left into the blue */
-.landing-gradient::after {
-  background: radial-gradient(circle closest-side, rgba(34, 211, 238, 0.16), transparent 70%);
-  bottom: -26vmax;
-  right: -12vmax;
-  animation: tundra-b 54s ease-in-out infinite alternate;
-}
-
-/* Mismatched durations mean the orbs continuously shift in and out of
-   overlap — the blend point slowly migrates across the page. */
-@keyframes tundra-a {
-  0% {
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-  50% {
-    transform: translate3d(10vw, 14vh, 0) scale(1.12);
-  }
-  100% {
-    transform: translate3d(22vw, 26vh, 0) scale(1.2);
-  }
-}
-
-@keyframes tundra-b {
-  0% {
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-  50% {
-    transform: translate3d(-9vw, -12vh, 0) scale(1.08);
-  }
-  100% {
-    transform: translate3d(-20vw, -22vh, 0) scale(1.18);
-  }
 }
 
 * {
@@ -117,12 +45,24 @@ select {
   transition-property: border-color, background-color, color, box-shadow;
 }
 
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.14);
+}
+
+::selection {
+  background: var(--mint);
+  color: var(--ink);
+}
+
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--line);
+  background: #CDD6CF;
   border-radius: 8px;
 }
 ::-webkit-scrollbar-track {
@@ -133,7 +73,7 @@ select {
 
 button,
 a {
-  transition-property: color, background-color, border-color, opacity, transform, filter;
+  transition-property: color, background-color, border-color, opacity, transform, box-shadow, filter;
 }
 
 @keyframes fade-in-up {
@@ -168,6 +108,31 @@ a {
   }
 }
 
+@keyframes float-y {
+  0%,
+  100% {
+    transform: translateY(0) rotate(var(--rot, 0deg));
+  }
+  50% {
+    transform: translateY(-14px) rotate(var(--rot, 0deg));
+  }
+}
+
+@keyframes blob-morph {
+  0% {
+    border-radius: 58% 42% 55% 45% / 55% 48% 52% 45%;
+    transform: rotate(0deg) scale(1);
+  }
+  50% {
+    border-radius: 45% 55% 40% 60% / 48% 58% 42% 52%;
+    transform: rotate(6deg) scale(1.05);
+  }
+  100% {
+    border-radius: 52% 48% 60% 40% / 42% 52% 48% 58%;
+    transform: rotate(-4deg) scale(0.98);
+  }
+}
+
 .anim-fade-in-up {
   animation: fade-in-up 280ms ease-out both;
 }
@@ -180,11 +145,23 @@ a {
   animation: pulse-dot 1.2s ease-in-out infinite;
 }
 
+.float-slow {
+  animation: float-y 9s ease-in-out infinite;
+}
+.float-slower {
+  animation: float-y 13s ease-in-out infinite;
+}
+
+.blob {
+  border-radius: 58% 42% 55% 45% / 55% 48% 52% 45%;
+  animation: blob-morph 16s ease-in-out infinite alternate;
+}
+
 .lift {
-  transition-property: transform, border-color, color, background-color;
+  transition-property: transform, box-shadow, border-color, color, background-color;
 }
 .lift:hover {
-  transform: translateY(-2px);
+  transform: translateY(-3px);
 }
 
 /* Staggered entrance for direct children */
