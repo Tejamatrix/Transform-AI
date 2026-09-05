@@ -49,18 +49,18 @@ export default function Landing() {
       {/* HERO — organic blobs, asymmetric split */}
       <section className="relative overflow-hidden">
         {/* background blobs */}
-        <div className="absolute -top-24 -left-32 w-[34rem] h-[34rem] bg-mint-soft blob" aria-hidden />
+        <div className="absolute -top-24 -left-32 w-[34rem] h-[34rem] bg-mint/25 blob" aria-hidden />
         <div className="absolute top-40 -right-40 w-[38rem] h-[38rem] bg-cream blob" style={{ animationDelay: "-8s" }} aria-hidden />
-        <div className="absolute bottom-0 left-1/3 w-72 h-72 bg-mint/60 blob" style={{ animationDelay: "-4s" }} aria-hidden />
+        <div className="absolute bottom-0 left-1/3 w-72 h-72 bg-highlight/70 blob" style={{ animationDelay: "-4s" }} aria-hidden />
 
         {/* floating geometric elements */}
         <div className="float-slow absolute top-28 right-[12%] w-10 h-10 rounded-xl bg-accent/15 rotate-12 hidden lg:block" aria-hidden />
-        <div className="float-slower absolute top-64 right-[28%] w-6 h-6 rounded-full bg-turquoise/30 hidden lg:block" aria-hidden />
+        <div className="float-slower absolute top-64 right-[28%] w-6 h-6 rounded-full bg-mint/40 hidden lg:block" aria-hidden />
         <div className="float-slow absolute bottom-24 left-[8%] w-8 h-8 border-2 border-accent/25 rounded-lg -rotate-12 hidden lg:block" style={{ animationDelay: "-3s" }} aria-hidden />
 
         <div className="relative max-w-6xl mx-auto px-6 pt-20 pb-28 grid lg:grid-cols-[1.1fr_0.9fr] gap-14 items-center">
           <div className="stagger">
-            <div className="inline-flex items-center gap-2 bg-mint-soft border border-mint rounded-full px-4 py-1.5 text-[13px] text-accent-strong font-medium">
+            <div className="inline-flex items-center gap-2 bg-mint-soft border border-mint/50 rounded-full px-4 py-1.5 text-[13px] text-accent-strong font-medium">
               <span className="w-1.5 h-1.5 rounded-full bg-accent" />
               One source. Every deliverable. Zero contradictions.
             </div>
@@ -68,7 +68,7 @@ export default function Landing() {
               Turn any document into communication your{" "}
               <span className="relative inline-block">
                 <span className="relative z-10 text-accent-strong">audience acts on</span>
-                <span className="absolute inset-x-0 bottom-1 h-3.5 bg-mint -z-0 rounded-full" />
+                <span className="absolute inset-x-0 bottom-1 h-3.5 bg-highlight -z-0 rounded-full" />
               </span>
               .
             </h1>
@@ -111,8 +111,8 @@ export default function Landing() {
               <div className="text-[15px] font-semibold">Cybersecurity Incident — March 2026</div>
               <div className="mt-4 grid grid-cols-2 gap-2 text-[12px]">
                 <div className="bg-mint-soft rounded-xl px-3 py-2"><span className="text-ink-3">Domain</span><div className="font-semibold text-accent-strong">Cybersecurity</div></div>
-                <div className="bg-cream rounded-xl px-3 py-2"><span className="text-ink-3">Intent</span><div className="font-semibold">Alert</div></div>
-                <div className="bg-cream rounded-xl px-3 py-2"><span className="text-ink-3">Entities</span><div className="font-semibold">18</div></div>
+                <div className="bg-highlight rounded-xl px-3 py-2"><span className="text-ink-3">Intent</span><div className="font-semibold">Alert</div></div>
+                <div className="bg-highlight rounded-xl px-3 py-2"><span className="text-ink-3">Entities</span><div className="font-semibold">18</div></div>
                 <div className="bg-mint-soft rounded-xl px-3 py-2"><span className="text-ink-3">Key facts</span><div className="font-semibold">24</div></div>
               </div>
               <div className="mt-4 flex flex-col gap-2">
@@ -130,6 +130,10 @@ export default function Landing() {
               <div className="text-[11px] text-ink-3">FACT VALIDATION</div>
               <div className="text-[15px] font-bold text-success">31 verified ✓</div>
               <div className="text-[12px] text-warn">2 partial · 1 unsupported</div>
+            </div>
+            {/* floating mint chip */}
+            <div className="float-slow absolute -top-8 -left-10 bg-mint text-white text-[12px] font-semibold rounded-2xl px-4 py-2.5 shadow-lift rotate-3">
+              ✓ Blueprint ready
             </div>
           </div>
         </div>
@@ -190,7 +194,7 @@ export default function Landing() {
                   i === 0 ? "md:col-span-2 bg-gradient-to-br from-surface to-mint-soft" : ""
                 }`}
               >
-                <div className="w-9 h-9 rounded-xl bg-mint-soft flex items-center justify-center text-accent-strong font-bold text-[15px] mb-4">
+                <div className="w-9 h-9 rounded-xl bg-mint text-white flex items-center justify-center font-bold text-[15px] mb-4">
                   {String(i + 1).padStart(2, "0")}
                 </div>
                 <div className="text-[16px] font-semibold">{title}</div>

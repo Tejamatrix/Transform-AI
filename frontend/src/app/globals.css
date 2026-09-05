@@ -3,26 +3,26 @@
 @tailwind utilities;
 
 :root {
-  /* Color tokens — fintech SaaS: seafoam mint / sage / cream / teal / charcoal */
+  /* Color tokens — Modern fintech SaaS: mint / sage / cream / charcoal / teal */
   --bg: #EEF3ED;            /* very light sage background */
   --surface: #FFFFFF;       /* cards */
-  --elevated: #E3EEE6;      /* soft seafoam wash */
-  --cream: #F4EEDC;         /* soft cream */
-  --line: #D8E2D8;          /* sage-gray border */
-  --line-subtle: #E4E9E1;   /* subtle border */
+  --elevated: #E3EDE4;      /* soft sage wash */
+  --cream: #F4EEDC;         /* soft cream highlight */
+  --line: #DCE5DC;          /* sage-gray border */
+  --line-subtle: #E6E9E0;   /* warm subtle border */
   --input-bg: #FFFFFF;
   --ink: #3F4743;           /* dark charcoal text */
   --ink-2: #6A726C;         /* secondary text */
   --ink-3: #98A099;         /* muted text */
   --accent: #18B7A5;        /* teal — interactive elements */
-  --accent-strong: #0F9C8C;
-  --mint: #59B99B;          /* primary mint / seafoam */
-  --mint-soft: #DFF0E7;     /* soft mint fill */
-  --turquoise: #18B7A5;
-  --highlight: #F5EFCF;     /* pale yellow/cream highlight */
-  --error: #D2544A;
-  --success: #3E8E5C;
-  --warn: #C08A2D;
+  --accent-strong: #0F9D8C;
+  --mint: #59B99B;          /* mint / seafoam primary */
+  --mint-soft: #DFF0E9;     /* soft mint fill */
+  --turquoise: #2FC6B2;
+  --highlight: #F5EFCF;     /* pale yellow-cream highlight */
+  --error: #DC2626;
+  --success: #3E7D4E;
+  --warn: #B08115;
 }
 
 html,
@@ -54,7 +54,7 @@ select:focus {
 }
 
 ::selection {
-  background: var(--mint-soft);
+  background: var(--highlight);
   color: var(--ink);
 }
 
@@ -63,7 +63,7 @@ select:focus {
   height: 10px;
 }
 ::-webkit-scrollbar-thumb {
-  background: #C4D2C6;
+  background: #C3CFC4;
   border-radius: 8px;
 }
 ::-webkit-scrollbar-track {
