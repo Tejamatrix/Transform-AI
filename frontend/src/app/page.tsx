@@ -1,6 +1,52 @@
+"use client";
+
 import Link from "next/link";
+import { useState } from "react";
 
 const FLOW = ["Ingest", "Understand", "Blueprint", "Plan", "Generate", "Validate", "Review", "Export"];
+
+const FLOW_INFO: Record<string, { title: string; body: string; points: string[] }> = {
+  Ingest: {
+    title: "Bring in any source",
+    body: "Nine source types, one pipeline. Upload documents, spreadsheets, code files, images or videos — or paste text and URLs. Everything is extracted, chunked and indexed for grounding.",
+    points: ["PDF, DOCX, TXT, CSV, URLs and pasted text", "Images via OCR, videos via Whisper transcript + frame text", "30+ programming languages — the AI explains what code does"],
+  },
+  Understand: {
+    title: "The AI reads it properly",
+    body: "The content understanding engine detects domain, intent and structure — whether it's an incident report, a policy document, a dataset or an application's source code.",
+    points: ["Domain + intent detection", "Entities (10 types), key facts, statistics", "Spoken video content and code behaviour, explained"],
+  },
+  Blueprint: {
+    title: "One blueprint. Every output.",
+    body: "The understanding is distilled into a Transformation Blueprint — a structured, editable intermediate representation. Every deliverable is generated from this single source of truth, so formats can never contradict each other.",
+    points: ["Domain, entities, key facts, timeline, risks, confidence", "Editable by the operator before generation", "Versioned — consistency is architectural, not hoped-for"],
+  },
+  Plan: {
+    title: "You stay in control",
+    body: "Based on the detected domain and intent, the analyzer recommends suitable outputs. Then you configure exactly what you need — no black boxes.",
+    points: ["Recommended outputs pre-selected for you", "Audience, tone, language, detail, objective, style", "Any combination of the 7 formats, one operation"],
+  },
+  Generate: {
+    title: "Every deliverable, one operation",
+    body: "All selected generators run from the same blueprint plus retrieved evidence — an executive summary, an advisory, a thread and a video script will always tell the same story.",
+    points: ["7 formats written by the live LLM", "Grounded in retrieved source evidence", "Structured JSON schemas, auto-repaired and validated"],
+  },
+  Validate: {
+    title: "Every claim gets checked",
+    body: "Generated claims are compared against retrieved evidence and classified: verified, partially supported or unsupported. Nothing hallucinated slips through silently.",
+    points: ["Color-coded grounding overlay in the output", "Click a claim → exact source page and quote", "Conflicts between sources flagged for human review"],
+  },
+  Review: {
+    title: "Human judgment, built in",
+    body: "Nothing is locked. Edit any section, shorten, expand, change tone or audience, rewrite — or regenerate entirely. Every change is versioned.",
+    points: ["Inline edits with instant preview", "Version history (v1, v2, v3…) with actions", "Regenerate from the same blueprint anytime"],
+  },
+  Export: {
+    title: "Production-ready files",
+    body: "Download deliverables in the format your audience needs — a real PowerPoint deck, a Word advisory, subtitles for your video editor, structured JSON for integrations.",
+    points: ["PPTX, DOCX, PDF, HTML, JSON, CSV, TXT, SRT, MD", "Video packages include storyboard, script and subtitles", "Clean layouts — presentation-ready, not raw dumps"],
+  },
+};
 
 const OUTPUTS = [
   ["Executive Summary", "Board-ready overview with findings, risks and recommendations."],
@@ -19,6 +65,9 @@ const TRUST = [
 ];
 
 export default function Landing() {
+  const [activeStep, setActiveStep] = useState("Blueprint");
+  const info = FLOW_INFO[activeStep];
+
   return (
     <div className="min-h-screen bg-bg text-ink overflow-x-clip">
       {/* minimal modern navigation */}
@@ -143,32 +192,69 @@ export default function Landing() {
       <section id="pipeline" className="relative py-20 bg-surface border-y border-line-subtle overflow-hidden">
         <div className="absolute -bottom-32 -right-24 w-96 h-96 bg-mint-soft blob opacity-80" aria-hidden />
         <div className="relative max-w-6xl mx-auto px-6">
-          <div className="grid lg:grid-cols-[0.9fr_1.1fr] gap-12 items-center">
-            <div>
-              <div className="text-[13px] font-semibold text-accent-strong tracking-wide uppercase">How it works</div>
-              <h2 className="mt-3 text-3xl font-bold tracking-tight leading-tight">
-                One blueprint.
-                <br />Every output.
-              </h2>
-              <p className="mt-4 text-ink-2 text-[15px] leading-relaxed">
-                The system understands your source once and builds a single structured
-                blueprint. All deliverables are generated from that same understanding —
-                consistent facts, consistent entities, no drift between formats.
-              </p>
+          <div className="grid lg:grid-cols-[0.9fr_1.1fr] gap-12 items-start">
+            {/* LEFT — live info panel for the active step */}
+            <div key={activeStep} className="anim-fade-in-up lg:sticky lg:top-28">
+              <div className="text-[13px] font-semibold text-accent-strong tracking-wide uppercase">
+                How it works
+              </div>
+              <div className="mt-3 flex items-center gap-3">
+                <span className="w-10 h-10 rounded-2xl bg-mint text-white flex items-center justify-center font-bold text-[15px] shadow-soft">
+                  {String(FLOW.indexOf(activeStep) + 1).padStart(2, "0")}
+                </span>
+                <h2 className="text-2xl font-bold tracking-tight leading-snug">{info.title}</h2>
+              </div>
+              <p className="mt-4 text-ink-2 text-[15px] leading-relaxed">{info.body}</p>
+              <ul className="mt-5 flex flex-col gap-2.5">
+                {info.points.map((pt) => (
+                  <li key={pt} className="flex items-start gap-2.5 text-[13.5px] text-ink-2">
+                    <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-accent shrink-0" />
+                    {pt}
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-7 h-1 w-full bg-line-subtle rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-accent rounded-full"
+                  style={{
+                    width: `${((FLOW.indexOf(activeStep) + 1) / FLOW.length) * 100}%`,
+                    transition: "width 300ms ease",
+                  }}
+                />
+              </div>
+              <div className="mt-2 text-[12px] text-ink-3">
+                Step {FLOW.indexOf(activeStep) + 1} of {FLOW.length} — click any step to explore
+              </div>
             </div>
-            <div className="flex flex-wrap items-center gap-2 stagger">
-              {FLOW.map((step, i) => (
-                <div key={step} className="flex items-center gap-2">
-                  <span className={`px-4 py-2.5 rounded-2xl text-[13px] font-medium border ${
-                    i === 2
-                      ? "bg-accent text-white border-accent shadow-soft"
-                      : "bg-bg border-line text-ink-2"
-                  }`}>
-                    {step}
-                  </span>
-                  {i < FLOW.length - 1 && <span className="text-accent/50">→</span>}
-                </div>
-              ))}
+
+            {/* RIGHT — clickable steps */}
+            <div className="flex flex-col gap-2 stagger">
+              {FLOW.map((step, i) => {
+                const active = step === activeStep;
+                return (
+                  <button
+                    key={step}
+                    onClick={() => setActiveStep(step)}
+                    className={`flex items-center gap-4 text-left px-5 py-4 rounded-2xl border active:scale-[0.98] ${
+                      active
+                        ? "bg-accent text-white border-accent shadow-lift"
+                        : "bg-bg border-line text-ink-2 hover:border-accent/50 hover:text-ink"
+                    }`}
+                  >
+                    <span
+                      className={`w-8 h-8 rounded-xl flex items-center justify-center text-[13px] font-bold shrink-0 ${
+                        active ? "bg-white/20 text-white" : "bg-elevated text-accent-strong"
+                      }`}
+                    >
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <span className="text-[15px] font-medium">{step}</span>
+                    <span className={`ml-auto text-lg transition-transform ${active ? "translate-x-0 opacity-100" : "-translate-x-1 opacity-0"}`}>
+                      →
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
