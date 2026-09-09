@@ -35,6 +35,31 @@ def _source_ref_payload(source: Source, chunk: dict | None) -> dict:
     }
 
 
+def _coerce_int(v, default: int = 0) -> int:
+    try:
+        return int(v or 0)
+    except (TypeError, ValueError):
+        return default
+
+
+def _normalize_source_ref(r) -> dict:
+    if isinstance(r, str) and r.strip():
+        return {"source_id": "", "source_title": r.strip()[:200], "page": 0, "section": "",
+                "paragraph": 0, "chunk_index": 0, "quote": ""}
+    if isinstance(r, dict):
+        return {
+            "source_id": str(r.get("source_id", "") or "")[:64],
+            "source_title": str(r.get("source_title", "") or "")[:200],
+            "page": _coerce_int(r.get("page")),
+            "section": str(r.get("section", "") or "")[:120],
+            "paragraph": _coerce_int(r.get("paragraph")),
+            "chunk_index": _coerce_int(r.get("chunk_index")),
+            "quote": str(r.get("quote", "") or "")[:300],
+        }
+    return {"source_id": "", "source_title": "", "page": 0, "section": "",
+            "paragraph": 0, "chunk_index": 0, "quote": ""}
+
+
 def _normalize_raw(raw: dict) -> dict:
     """Repair common LLM deviations so a live provider's near-miss JSON still
     validates instead of failing the analysis (strings-as-objects, bad
@@ -47,19 +72,20 @@ def _normalize_raw(raw: dict) -> dict:
     for e in raw.get("entities") or []:
         if isinstance(e, str) and e.strip():
             ents.append({"name": e.strip()[:120], "type": "Entity", "description": ""})
-        elif isinstance(e, dict) and str(e.get("name", "")).strip():
-            ents.append({"name": str(e["name"])[:120], "type": str(e.get("type", "Entity"))[:40],
-                         "description": str(e.get("description", ""))[:300]})
+        elif isinstance(e, dict) and str(e.get("name", "") or "").strip():
+            ents.append({"name": str(e["name"])[:120], "type": str(e.get("type") or "Entity")[:40],
+                         "description": str(e.get("description") or "")[:300]})
     raw["entities"] = ents[:40]
 
-    # key_facts: str -> {text, source_refs}
+    # key_facts: str -> {text, source_refs}; deep-normalize nested refs
     facts = []
     for f in raw.get("key_facts") or []:
         if isinstance(f, str) and f.strip():
             facts.append({"text": f.strip()[:600], "source_refs": []})
-        elif isinstance(f, dict) and str(f.get("text", "")).strip():
+        elif isinstance(f, dict) and str(f.get("text", "") or "").strip():
             refs = f.get("source_refs") if isinstance(f.get("source_refs"), list) else []
-            facts.append({"text": str(f["text"])[:600], "source_refs": refs})
+            facts.append({"text": str(f["text"])[:600],
+                          "source_refs": [_normalize_source_ref(r) for r in refs][:4]})
     raw["key_facts"] = facts[:40]
 
     # scalar string lists
@@ -152,12 +178,37 @@ def analyze_project(db: Session, project_id: str, user_id: str) -> Blueprint:
     except Exception:
         raise AppError("Analysis failed. Please retry.", 502)
 
-    # Enforce schema; auto-repair common live-LLM deviations first.
+    # Enforce schema with self-healing: normalize -> validate -> retry with
+    # repair instructions -> deterministic offline fallback. The first attempt
+    # must always yield a blueprint.
+    content = None
     try:
-        raw = _normalize_raw(raw if isinstance(raw, dict) else {})
-        content = BlueprintContent(**{k: v for k, v in raw.items() if k in BlueprintContent.model_fields})
+        normalized = _normalize_raw(raw if isinstance(raw, dict) else {})
+        content = BlueprintContent(**{k: v for k, v in normalized.items() if k in BlueprintContent.model_fields})
     except Exception:
-        raise AppError("Analyzer returned an invalid structure. Please retry.", 502)
+        content = None
+
+    if content is None:
+        try:
+            repair_user = (
+                user
+                + "\n\nIMPORTANT: The previous response failed schema validation. Return ONLY the JSON again, "
+                "strictly matching the required keys and types: every list entry must be an object with the "
+                "exact keys specified (no strings instead of objects). Use \"\" for unknown text fields and 0 "
+                "for unknown numbers. Omit null values."
+            )
+            raw2 = get_llm_provider().generate_json(system, repair_user)
+            normalized2 = _normalize_raw(raw2 if isinstance(raw2, dict) else {})
+            content = BlueprintContent(**{k: v for k, v in normalized2.items() if k in BlueprintContent.model_fields})
+        except Exception:
+            content = None
+
+    if content is None:
+        # last resort: deterministic offline analysis — first attempt always yields a blueprint
+        from app.providers.llm.offline_engine import run_analyzer
+        combined = "\n\n".join(f"{s.title or s.filename}\n{s.raw_text[:8000]}" for s in sources)
+        fallback = run_analyzer(combined, sources[0].title or sources[0].filename or "Source")
+        content = BlueprintContent(**{k: v for k, v in fallback.items() if k in BlueprintContent.model_fields})
 
     # Attach deterministic refs: each key fact gets its best-matching evidence
     fact_texts = [f.get("text", "") for f in (raw.get("key_facts") or [])]

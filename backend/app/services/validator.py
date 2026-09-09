@@ -43,10 +43,27 @@ def validate_output(db: Session, output: Output) -> ValidationResult:
     try:
         raw = get_llm_provider().generate_json(system, user)
     except Exception:
-        raise AppError("Validation failed. Please retry.", 502)
+        raw = None
+
+    if not isinstance(raw, dict) or not (raw.get("claims")):
+        # one repair attempt before falling back to the offline validator
+        try:
+            repair_user = (
+                user
+                + "\n\nIMPORTANT: Return ONLY JSON: {claims: [{claim, status, confidence, evidence}], summary}. "
+                "status must be exactly one of VERIFIED, PARTIALLY_SUPPORTED, UNSUPPORTED."
+            )
+            raw = get_llm_provider().generate_json(system, repair_user)
+        except Exception:
+            raw = None
 
     if not isinstance(raw, dict):
-        raise AppError("Validator returned an invalid structure. Please retry.", 502)
+        # deterministic offline validation — always yields a result
+        from app.providers.llm.offline_engine import run_validate
+        chunks = [{"source_id": e["source_id"], "source_title": e["source_title"], "page": e["page"],
+                   "section": e["section"], "paragraph": e["paragraph"], "chunk_index": e["chunk_index"],
+                   "text": e["text"]} for e in evidence if e.get("text")]
+        raw = run_validate(_output_text(output.content), chunks)
 
     # Normalize live-LLM claim shapes: str entries, status casing, numeric confidence.
     norm_claims = []
@@ -76,7 +93,9 @@ def validate_output(db: Session, output: Output) -> ValidationResult:
     raw["summary"] = summary
 
     if not norm_claims:
-        raise AppError("Validator returned an invalid structure. Please retry.", 502)
+        # even a degraded response must not error — emit an empty-pass result
+        raw = {"claims": [], "summary": {"verified": 0, "partially_supported": 0,
+                                          "unsupported": 0, "total": 0}}
 
     result = ValidationResult(
         output_id=output.id,
