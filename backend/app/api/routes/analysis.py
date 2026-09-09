@@ -16,7 +16,11 @@ router = APIRouter(prefix="/api/analysis", tags=["analysis"])
 def run_analysis(project_id: str, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     blueprint = analyzer_svc.analyze_project(db, project_id, user.id)
     log_action(db, user.id, project_id, "analysis.completed", f"blueprint {blueprint.id}")
-    return blueprint
+    return BlueprintOut(
+        id=blueprint.id, project_id=blueprint.project_id, version=blueprint.version,
+        status=blueprint.status, content=blueprint.content,
+        created_at=blueprint.created_at, updated_at=blueprint.updated_at,
+    )
 
 
 @router.get("/{project_id}", response_model=list[BlueprintOut])

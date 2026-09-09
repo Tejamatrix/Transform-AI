@@ -36,13 +36,21 @@ class OpenAIProvider(LLMProvider):
     name = "openai"
 
     def generate_json(self, system_prompt: str, user_prompt: str, schema_hint: dict | None = None) -> dict[str, Any]:
+        # Extraction/analysis tasks need maximum fidelity; generation tasks
+        # get slightly more freedom for natural framing.
+        if "TASK=analyzer" in system_prompt or "TASK=code_analyzer" in system_prompt or "TASK=validator" in system_prompt:
+            temperature = 0.05
+        elif "TASK=quality" in system_prompt:
+            temperature = 0.1
+        else:
+            temperature = 0.35
         payload = {
             "model": settings.LLM_MODEL,
             "messages": [
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt},
             ],
-            "temperature": 0.1,
+            "temperature": temperature,
             "response_format": {"type": "json_object"},
         }
         headers = {"Authorization": f"Bearer {settings.GLM_API_KEY or settings.OPENAI_API_KEY}"}

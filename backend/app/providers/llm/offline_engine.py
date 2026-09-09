@@ -107,8 +107,25 @@ TONE_OPENERS = {
 
 def _split_sentences(text: str) -> list[str]:
     text = re.sub(r"\s+", " ", text).strip()
+    # protect common abbreviations so splitting stays accurate
+    text = re.sub(r"\b(e\.g|i\.e|vs|etc|Dr|Mr|Ms|Prof|Inc|Ltd|No|approx|Fig)\.\s", r"\1<DOT> ", text)
     parts = re.split(r"(?<=[.!?])\s+(?=[A-Z0-9\"'])", text)
-    return [p.strip() for p in parts if len(p.strip()) > 20][:200]
+    cleaned = [re.sub(r"<DOT>", ".", p).strip() for p in parts]
+    return [p for p in cleaned if len(p) > 20][:200]
+
+
+_INFO_MARKERS = re.compile(
+    r"\d[\d,.]*\s?(?:%|percent|users|records|systems|servers|departments|hours|days|GB|TB|million|thousand|lakh|crore)?\b"
+    r"|CVE-\d+-\d+|\b(?:should|must|will|detected|exposed|encrypted|restored|completed|issued|launched|affected)\b", re.IGNORECASE)
+
+
+def _informativeness(sentence: str) -> int:
+    score = 0
+    score += len(_INFO_MARKERS.findall(sentence)) * 2
+    if re.search(r"\d", sentence):
+        score += 2
+    score += min(3, sum(1 for w in sentence.split() if w[0].isupper()))  # named entities
+    return score
 
 
 def _parse_context(user_prompt: str) -> dict[str, str]:
@@ -175,8 +192,8 @@ def run_analyzer(text: str, source_title: str) -> dict:
     for i, s in enumerate(sentences):
         if re.search(r"\"(.+?)\"", s) and len(quotes) < 6:
             quotes.append(re.search(r"\"(.+?)\"", s).group(1))
-        if STAT_RE.search(s) and re.search(r"\d", s) and len(key_facts) < 18:
-            key_facts.append({"text": s, "source_refs": []})
+        if re.search(r"\d", s) and len(key_facts) < 18:
+            key_facts.append({"text": s, "source_refs": [], "_score": _informativeness(s)})
             stats = [m.group(0).strip() for m in STAT_RE.finditer(s) if re.search(r"\d", m.group(0))]
             for st in stats[:2]:
                 if len(statistics) < 12:
@@ -185,6 +202,8 @@ def run_analyzer(text: str, source_title: str) -> dict:
             risks.append(s)
         if any(w in s.lower() for w in RECO_WORDS) and len(recommendations) < 8:
             recommendations.append(s)
+    # most informative facts first (numbers, entities, outcomes)
+    key_facts.sort(key=lambda f: -f.pop("_score", 0))
 
     timeline = []
     for match_text, (y, mo, d) in _extract_dates(text):
@@ -264,11 +283,20 @@ def _tone_wrap(text: str, config: dict) -> str:
     return text
 
 
-def _impact(ctx: dict) -> str:
+def _impact(ctx: dict, facts: list[str] | None = None) -> str:
     risks = ctx.get("risks", [])
+    numbers = [f for f in (facts or []) if re.search(r"\d", f)]
+    parts: list[str] = []
+    if numbers:
+        parts.append(f"What is at stake, concretely: {numbers[0][:180]}")
     if risks:
-        return f"Operational impact is driven by {len(risks)} identified risk(s). Primary concern: {risks[0][:180]}"
-    return "Business and operational impact appears limited based on the source material; monitor for further developments."
+        parts.append(f"Primary risk: {risks[0][:180]}")
+        if len(risks) > 1:
+            parts.append(f"Secondary exposure: {risks[1][:160]}")
+    if not parts:
+        return "Business and operational impact appears limited based on the source material; monitor for further developments."
+    parts.append("Unaddressed, these factors compound — operational continuity, compliance posture and stakeholder confidence are the areas most exposed.")
+    return " ".join(parts)
 
 
 def _depth(config: dict) -> int:
@@ -292,15 +320,28 @@ def run_generate(task: str, bp: dict, config: dict, evidence: list[str], bluepri
 
     if task == "executive_summary":
         n = _depth(config)
+        aud = AUDIENCE_LABELS.get(config.get("audience", "general_public"), "stakeholders")
+        top_risk = ctx["risks"][0] if ctx["risks"] else ""
         sections = [
             {"heading": _t(config, "Executive Overview"), "body": _tone_wrap(
-                f"This summary is prepared for {aud}, based on analysis of the source material. {bp.get('summary', '')}", config)},
+                f"Prepared for {aud}. {bp.get('summary', '')} The material warrants attention: "
+                f"{len(ctx['facts'])} substantive findings were identified during analysis.", config)},
             {"heading": _t(config, "Key Findings"), "body": "\n".join(f"- {f}" for f in facts[:n])},
             {"heading": _t(config, "Important Statistics"), "body": "\n".join(f"- {s}" for s in ctx["stats"][:4]) or "No quantitative statistics were detected in the source."},
-            {"heading": _t(config, "Risks"), "body": "\n".join(f"- {r}" for r in ctx["risks"][:n]) or "No explicit risks were identified in the source."},
-            {"heading": _t(config, "Business / Operational Impact"), "body": _impact(ctx)},
-            {"heading": _t(config, "Recommendations"), "body": "\n".join(f"- {r}" for r in ctx["recs"][:n]) or "No explicit recommendations were found; further review is advised."},
-            {"heading": _t(config, "Conclusion"), "body": f"Overall, the source material on {domain_label.lower()} indicates a {ctx['intent']} situation requiring attention from {aud}. Confidence in the underlying analysis is {int((bp.get('confidence', 0.7)) * 100)}%."},
+            {"heading": _t(config, "Risks"), "body": (
+                ("The most significant exposure identified: " + top_risk[:220] + "\n\n" if top_risk else "")
+                + "\n".join(f"- {r}" for r in ctx["risks"][:n])
+            ) or "No explicit risks were identified in the source."},
+            {"heading": _t(config, "Business / Operational Impact"), "body": _impact(ctx, facts)},
+            {"heading": _t(config, "Recommendations"), "body": (
+                "Priority actions, in order:\n" + "\n".join(f"- {r}" for r in ctx["recs"][:n])
+            ) or "No explicit recommendations were found; further review is advised."},
+            {"heading": _t(config, "Conclusion"), "body": (
+                f"The {domain_label.lower()} situation described in the source is {('material and time-sensitive' if ctx['intent'] == 'alert' else 'relevant')} "
+                f"for {aud}. Acting on the {len(ctx['recs']) or 'stated'} recommendations above — beginning with "
+                f"'{(ctx['recs'][0][:120] if ctx['recs'] else 'a structured review of the source')}…' — "
+                f"addresses the primary exposures. Underlying analysis confidence: {int((bp.get('confidence', 0.7)) * 100)}%."
+            )},
         ]
         return {"title": f"Executive Summary: {title_hint}", "sections": sections,
                 "claims": facts[:n], "sources": bp.get("source_references", []), "language_note": lang_note}

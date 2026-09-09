@@ -51,6 +51,14 @@ Rules:
 - confidence: 0.0-1.0
 - Use ONLY information present in the source. Never invent facts.
 - Every key_facts entry should reference its supporting source location when available.
+
+EXTRACTION ACCURACY RULES:
+- Preserve numbers, dates, names and versions EXACTLY as written in the source
+  (38,000 stays 38,000; CVE-2026-1138 stays CVE-2026-1138).
+- key_facts must be atomic: one verifiable statement each, not merged paragraphs.
+- Prefer facts with quantities, dates, named entities and explicit outcomes over vague claims.
+- Summarize in your own words but attribute every number and quote verbatim.
+- If the source contradicts itself or another source, list it in conflicts.
 """)
 
 # Code sources: the analyzer becomes a code-understanding engine.
@@ -106,6 +114,20 @@ STYLE RULE: write in the style named by CONFIG.style —
 "standard": clear professional prose; "storytelling": narrative flow with
 context-first framing; "data_driven": lead with numbers and statistics;
 "action_oriented": lead with actions, owners and next steps.
+
+FRAMING RULES (quality contract):
+1. Every section/body opens with a topic sentence that states the point, then
+   supports it with blueprint facts — never a bare list dump.
+2. Add the "so what": for each key finding, connect it to impact or consequence
+   for the configured audience.
+3. Never repeat the same sentence or fact twice across sections; merge and
+   synthesize instead.
+4. Keep every number, date and name EXACTLY as given in the blueprint/evidence.
+5. Vary sentence openers; no formulaic filler ("In today's world…", "It is
+   important to note…").
+6. Attribute: when a claim comes from a specific source, say so naturally
+   ("according to the incident report…").
+7. Close each major section with a forward-looking or decisive statement.
 
 Context block legend:
 BLUEPRINT = structured understanding of the source

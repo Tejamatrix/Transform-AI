@@ -139,10 +139,17 @@ def analyze_project(db: Session, project_id: str, user_id: str) -> Blueprint:
     if not sources:
         raise AppError("Add at least one processed source before analysis.")
 
-    # Retrieve representative evidence across sources for grounding
-    evidence: list[dict] = []
-    query_base = " ".join(s.raw_text[:400] for s in sources[:3])
-    evidence = rag.retrieve(db, project_id, query_base[:500], k=12)
+    # Multi-query hybrid retrieval: several phrasings of the information need
+    # are fused (RRF) so evidence coverage stays high even on thin sources.
+    evidence = rag.retrieve_multi(
+        db, project_id,
+        queries=[
+            " ".join(s.raw_text[:300] for s in sources[:2]),
+            f"{sources[0].title or ''} key facts events dates numbers",
+            "risks impact recommendations actions timeline",
+        ],
+        k=14,
+    )
 
     ref_map = {e["source_id"]: e for e in evidence}
     # Code sources use a dedicated analyzer prompt (explains what the code does)
@@ -206,9 +213,41 @@ def analyze_project(db: Session, project_id: str, user_id: str) -> Blueprint:
     if content is None:
         # last resort: deterministic offline analysis — first attempt always yields a blueprint
         from app.providers.llm.offline_engine import run_analyzer
-        combined = "\n\n".join(f"{s.title or s.filename}\n{s.raw_text[:8000]}" for s in sources)
-        fallback = run_analyzer(combined, sources[0].title or sources[0].filename or "Source")
+        combined_text = "\n\n".join(f"{s.title or s.filename}\n{s.raw_text[:8000]}" for s in sources)
+        fallback = run_analyzer(combined_text, sources[0].title or sources[0].filename or "Source")
         content = BlueprintContent(**{k: v for k, v in fallback.items() if k in BlueprintContent.model_fields})
+
+    # ---- deterministic self-heal on the live result ----
+    combined_src = "\n".join(s.raw_text[:6000] for s in sources)
+
+    # intent stabilization: strong alert signals override a soft "report" verdict
+    import re as _re
+    if content.intent == "report" and _re.search(
+        r"unauthorized|breach|ransomware|attack|phishing|outage|exploit|compromis", combined_src, _re.I
+    ):
+        content = content.model_copy(update={"intent": "alert"})
+
+    # thin-extraction backfill from the deterministic engine (per source)
+    from app.providers.llm.offline_engine import run_analyzer as _off
+    if not (content.recommendations and content.risks and content.statistics and content.important_quotes):
+        for s in sources:
+            mini = _off(s.raw_text[:8000], s.title or s.filename or "Source")
+            updates = {}
+            if not content.recommendations and mini["recommendations"]:
+                updates["recommendations"] = mini["recommendations"][:6]
+            if not content.risks and mini["risks"]:
+                updates["risks"] = mini["risks"][:6]
+            if not content.statistics and mini["statistics"]:
+                updates["statistics"] = mini["statistics"][:8]
+            if not content.important_quotes and mini["important_quotes"]:
+                updates["important_quotes"] = mini["important_quotes"][:4]
+            if not content.timeline and mini["timeline"]:
+                updates["timeline"] = mini["timeline"][:8]
+            if updates:
+                content = content.model_copy(update=updates)
+        if not content.recommended_outputs:
+            content = content.model_copy(update={"recommended_outputs": [
+                "executive_summary", "advisory", "presentation", "infographic"]})
 
     # Attach deterministic refs: each key fact gets its best-matching evidence
     fact_texts = [f.get("text", "") for f in (raw.get("key_facts") or [])]

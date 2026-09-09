@@ -26,7 +26,13 @@ def generate_output(db: Session, blueprint: Blueprint, output_type: str,
                     config: GenerationConfig) -> Output:
     project = db.get(Project, blueprint.project_id)
 
-    evidence = rag.retrieve(db, blueprint.project_id, blueprint.content.get("summary", "")[:400], k=8)
+    # Richer evidence set: blueprint summary + key facts as distinct queries
+    fact_queries = [f.get("text", "") for f in blueprint.content.get("key_facts", [])[:3] if f.get("text")]
+    evidence = rag.retrieve_multi(
+        db, blueprint.project_id,
+        queries=[blueprint.content.get("summary", "")[:300]] + fact_queries,
+        k=10,
+    )
     if not evidence:
         evidence = [{"source_id": "", "source_title": "", "page": 0, "section": "",
                      "paragraph": 0, "chunk_index": 0, "text": ""}]
@@ -36,7 +42,7 @@ def generate_output(db: Session, blueprint: Blueprint, output_type: str,
         BLUEPRINT=json.dumps(blueprint.content, ensure_ascii=False),
         CONFIG=json.dumps(config.model_dump(), ensure_ascii=False),
         EVIDENCE="\n\n".join(
-            f"[{e['source_title']} | page {e['page']} | para {e['paragraph']}]\n{e['text'][:500]}"
+            f"[{e['source_title']} | page {e['page']} | para {e['paragraph']}]\n{e['text'][:700]}"
             for e in evidence if e["text"]
         ),
     )

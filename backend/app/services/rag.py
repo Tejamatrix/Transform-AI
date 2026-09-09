@@ -71,21 +71,38 @@ def embed_and_store_chunks(db: Session, source: Source) -> int:
     return len(chunks)
 
 
+def _keywords(text: str) -> set[str]:
+    return {t.lower() for t in re.findall(r"[a-zA-Z0-9']{3,}", text)}
+
+
+def _hybrid_score(qvec: np.ndarray, q_kw: set[str], row_text: str, vec: np.ndarray) -> float:
+    """Dense cosine + lexical overlap boost — hashed embeddings are lexical,
+    so keyword agreement is a strong relevance signal here."""
+    denom = (float(np.linalg.norm(qvec)) * float(np.linalg.norm(vec))) or 1e-9
+    cosine = float(np.dot(qvec, vec) / denom)
+    kw = _keywords(row_text)
+    if q_kw and kw:
+        overlap = len(q_kw & kw) / len(q_kw)
+    else:
+        overlap = 0.0
+    return cosine + 0.35 * overlap
+
+
 def retrieve(db: Session, project_id: str, query: str, k: int = 6) -> list[dict]:
-    """Semantic retrieval across all sources in a project."""
+    """Hybrid semantic retrieval across all sources in a project."""
     rows = db.query(SourceChunk).filter(SourceChunk.project_id == project_id).all()
     if not rows:
         return []
     provider = get_embedding_provider()
     qvec = provider.embed([query])[0]
+    q_kw = _keywords(query)
     sources = {s.id: s for s in db.query(Source).filter(Source.project_id == project_id).all()}
     scored: list[tuple[float, SourceChunk]] = []
     for row in rows:
         if not row.embedding:
             continue
         vec = np.frombuffer(row.embedding, dtype=np.float32)
-        denom = (float(np.linalg.norm(qvec)) * float(np.linalg.norm(vec))) or 1e-9
-        scored.append((float(np.dot(qvec, vec) / denom), row))
+        scored.append((_hybrid_score(qvec, q_kw, row.text, vec), row))
     scored.sort(key=lambda x: -x[0])
     out = []
     seen: set[str] = set()
@@ -104,6 +121,52 @@ def retrieve(db: Session, project_id: str, query: str, k: int = 6) -> list[dict]
             "chunk_index": row.chunk_index,
             "text": row.text,
             "score": round(score, 4),
+        })
+        if len(out) >= k:
+            break
+    return out
+
+
+def retrieve_multi(db: Session, project_id: str, queries: list[str], k: int = 12) -> list[dict]:
+    """Multi-query retrieval with reciprocal-rank fusion — several phrasings
+    of the information need are asked at once; chunks that rank well across
+    queries are the most relevant. Improves evidence coverage on vague queries."""
+    rows = db.query(SourceChunk).filter(SourceChunk.project_id == project_id).all()
+    if not rows:
+        return []
+    provider = get_embedding_provider()
+    sources = {s.id: s for s in db.query(Source).filter(Source.project_id == project_id).all()}
+    rrf: dict[str, float] = {}
+    best: dict[str, tuple[float, SourceChunk]] = {}
+    for q in [q for q in queries if q.strip()]:
+        qvec = provider.embed([q])[0]
+        q_kw = _keywords(q)
+        scored: list[tuple[float, SourceChunk]] = []
+        for row in rows:
+            if not row.embedding:
+                continue
+            vec = np.frombuffer(row.embedding, dtype=np.float32)
+            scored.append((_hybrid_score(qvec, q_kw, row.text, vec), row))
+        scored.sort(key=lambda x: -x[0])
+        for rank, (score, row) in enumerate(scored[:k]):
+            rrf[row.id] = rrf.get(row.id, 0.0) + 1.0 / (60 + rank)
+            if row.id not in best or score > best[row.id][0]:
+                best[row.id] = (score, row)
+    ranked = sorted(rrf.items(), key=lambda x: -x[1])
+    out = []
+    for chunk_id, fused in ranked:
+        score, row = best[chunk_id]
+        src = sources.get(row.source_id)
+        out.append({
+            "source_id": row.source_id,
+            "source_title": (src.title if src else "") or (src.filename if src else ""),
+            "source_type": src.source_type if src else "",
+            "page": row.page,
+            "section": row.section,
+            "paragraph": row.paragraph,
+            "chunk_index": row.chunk_index,
+            "text": row.text,
+            "score": round(fused, 4),
         })
         if len(out) >= k:
             break

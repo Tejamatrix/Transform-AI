@@ -128,7 +128,7 @@ class BlueprintOut(BaseModel):
     project_id: str
     version: int
     status: str
-    content: BlueprintContent
+    content: dict  # validated against BlueprintContent on the write path
     created_at: datetime
     updated_at: datetime
 

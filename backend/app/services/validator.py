@@ -31,7 +31,12 @@ def _output_text(content: dict) -> str:
 
 
 def validate_output(db: Session, output: Output) -> ValidationResult:
-    evidence = rag.retrieve(db, output.project_id, _output_text(output.content)[:600], k=14)
+    text = _output_text(output.content)
+    evidence = rag.retrieve_multi(
+        db, output.project_id,
+        queries=[text[:400], text[400:800] or text[:400]],
+        k=14,
+    )
     system, user = prompts.render(
         "validator", 1,
         OUTPUT=json.dumps(output.content, ensure_ascii=False)[:20000],
