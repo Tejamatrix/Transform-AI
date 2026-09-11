@@ -154,9 +154,9 @@ export default function Landing() {
             <Gyro strength={14} tilt={5}>
               <div className="relative glass-deep rounded-card p-6 rotate-1 glow-selected">
                 <div className="flex items-center gap-1.5 mb-4">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#F0C9C5]" />
-                  <span className="w-2.5 h-2.5 rounded-full bg-highlight" />
-                  <span className="w-2.5 h-2.5 rounded-full bg-mint" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#C9D7F8]" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-violet/40" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-accent/50" />
                 </div>
                 <div className="text-[12px] text-ink-3 mb-1">TRANSFORMATION BLUEPRINT</div>
                 <div className="text-[15px] font-semibold">Cybersecurity Incident — March 2026</div>

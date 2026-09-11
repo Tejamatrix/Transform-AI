@@ -10,7 +10,7 @@ export function Badge({
     accent: "bg-mint-soft text-accent-strong border-mint/60",
     error: "bg-[#FBE9E9] text-error border-[#F2C4C4]",
     success: "bg-[#E9F3EB] text-success border-[#C2DCC8]",
-    warn: "bg-highlight text-warn border-[#E8DFAE]",
+    warn: "bg-highlight text-warn border-[#D9D6F5]",
   };
   return (
     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-xs font-medium ${tones[tone]}`}>

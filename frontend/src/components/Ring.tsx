@@ -54,7 +54,7 @@ export function Ring({
 export function ScoreBadge({ value }: { value: number }) {
   const tone = value >= 90 ? "High" : value >= 70 ? "Medium" : "Low";
   const cls = value >= 90 ? "text-success bg-[#E9F3EB] border-[#C2DCC8]"
-    : value >= 70 ? "text-warn bg-highlight border-[#E8DFAE]"
+    : value >= 70 ? "text-warn bg-highlight border-[#D9D6F5]"
     : "text-error bg-[#FBE9E9] border-[#F2C4C4]";
   return (
     <span className={`inline-flex items-center px-2 py-0.5 rounded-full border text-[11px] font-semibold ${cls}`}>

@@ -1,4 +1,4 @@
-﻿"""Export service: TXT, Markdown, DOCX, SRT. Returns (filename, bytes, media_type)."""
+"""Export service: TXT, Markdown, DOCX, SRT. Returns (filename, bytes, media_type)."""
 from __future__ import annotations
 
 import io
@@ -118,11 +118,11 @@ def _to_pptx(content: dict) -> bytes:
     from pptx.enum.shapes import MSO_SHAPE
 
     # Light theme — projector/print friendly, clean hierarchy
-    INK = RGBColor(0x11, 0x18, 0x27)
-    MUTED = RGBColor(0x6B, 0x72, 0x80)
-    ACCENT = RGBColor(0x3B, 0x82, 0xF6)
-    ACCENT_SOFT = RGBColor(0xEF, 0xF6, 0xFF)
-    LINE = RGBColor(0xE5, 0xE7, 0xEB)
+    INK = RGBColor(0x2E, 0x34, 0x40)
+    MUTED = RGBColor(0x64, 0x6B, 0x7A)
+    ACCENT = RGBColor(0x5B, 0x8D, 0xEF)
+    ACCENT_SOFT = RGBColor(0xE4, 0xEC, 0xFC)
+    LINE = RGBColor(0xDF, 0xE4, 0xEB)
     WHITE = RGBColor(0xFF, 0xFF, 0xFF)
 
     SLIDE_W = 13.333
@@ -286,9 +286,9 @@ def _pdf_story_blocks(content: dict) -> list:
     from reportlab.lib.colors import HexColor
     from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 
-    ACCENT = HexColor("#3B82F6")
-    INK = HexColor("#111111")
-    MUTED = HexColor("#555555")
+    ACCENT = HexColor("#5B8DEF")
+    INK = HexColor("#2E3440")
+    MUTED = HexColor("#646B7A")
 
     title_style = ParagraphStyle("T", fontName="Helvetica-Bold", fontSize=20, textColor=INK, spaceAfter=2 * mm)
     h_style = ParagraphStyle("H", fontName="Helvetica-Bold", fontSize=13, textColor=ACCENT, spaceBefore=4 * mm, spaceAfter=1.5 * mm)
@@ -326,7 +326,7 @@ def _pdf_story_blocks(content: dict) -> list:
                                 ("VALIGN", (0, 0), (-1, -1), "TOP"),
                                 ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
                                 ("TOPPADDING", (0, 0), (-1, -1), 3),
-                                ("LINEBELOW", (0, 0), (-1, -2), 0.25, HexColor("#DDDDDD")),
+                                ("LINEBELOW", (0, 0), (-1, -2), 0.25, HexColor("#DFE4EB")),
                             ]))
                             story.append(t)
                             story.append(Spacer(1, 2 * mm))
@@ -397,8 +397,8 @@ def _to_html(content: dict, output_type: str) -> bytes:
 <style>
   body {{ font-family: 'DM Sans', 'Segoe UI', sans-serif; color: #111827; max-width: 800px;
          margin: 40px auto; padding: 0 24px; line-height: 1.65; }}
-  h1 {{ font-size: 26px; border-bottom: 3px solid #3B82F6; padding-bottom: 10px; }}
-  h3 {{ color: #3B82F6; font-size: 15px; text-transform: uppercase; letter-spacing: 0.04em;
+  h1 {{ font-size: 26px; border-bottom: 3px solid #5B8DEF; padding-bottom: 10px; }}
+  h3 {{ color: #5B8DEF; font-size: 15px; text-transform: uppercase; letter-spacing: 0.04em;
        margin: 22px 0 6px; }}
   h4 {{ margin: 14px 0 4px; }}
   p {{ margin: 6px 0; }}
