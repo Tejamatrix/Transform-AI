@@ -133,20 +133,20 @@ export default function OutputDetailPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div>
           <Link href={`/dashboard/review/${project_id}`} className="text-[12px] text-ink-3 hover:text-ink-2">
             ← All outputs
           </Link>
           <h2 className="text-xl font-semibold mt-1">{OUTPUT_LABELS[output.output_type] || output.output_type}</h2>
-          <div className="flex items-center gap-2 mt-2">
+          <div className="flex flex-wrap items-center gap-2 mt-2">
             <Badge tone="accent">v{output.current_version}</Badge>
             <Badge>{String(output.config.audience || "").replace(/_/g, " ")}</Badge>
             <Badge>{String(output.config.tone || "")}</Badge>
             <Badge>{String(output.config.language || "")}</Badge>
           </div>
         </div>
-        <div className="flex gap-1.5 shrink-0 flex-wrap justify-end max-w-2xl">
+        <div className="flex gap-1.5 flex-wrap w-full sm:w-auto sm:justify-end sm:max-w-xl lg:max-w-2xl">
           <Button variant="ghost" className="!h-9 !px-3 !text-[13px] xl:hidden" onClick={() => setAgentOpen(!agentOpen)}>
             {agentOpen ? "Hide assistant" : "Ask AI"}
           </Button>
