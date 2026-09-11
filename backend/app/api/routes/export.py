@@ -28,8 +28,17 @@ def export(output_id: str, body: ExportRequest, db: Session = Depends(get_db),
     quality = val_svc.score_quality(db, o, None)
     content["_quality"] = quality
 
-    filename, data, media_type = exporter.export_output(o.output_type, content, body.format,
-                                                        (bp.content.get("summary", "")[:40] if bp else o.output_type))
+    # PS file-naming convention: ProjectName_Audience_OutputType.ext
+    from app.models.models import Project
+    project = db.get(Project, o.project_id)
+    parts = [
+        (project.name if project else "") or "Prism",
+        str(o.config.get("audience", "")) or "general",
+        o.output_type,
+    ]
+    title = "_".join(p.strip().replace(" ", "_") for p in parts if p)
+
+    filename, data, media_type = exporter.export_output(o.output_type, content, body.format, title)
     log_action(db, user.id, o.project_id, "output.exported", f"{o.output_type} -> {body.format}")
     quoted = urllib.parse.quote(filename)
     return Response(

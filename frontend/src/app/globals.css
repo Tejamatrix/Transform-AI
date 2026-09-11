@@ -165,6 +165,40 @@ a {
   transform: translateY(-3px);
 }
 
+/* ---- Neumorphic + pastel gradient system (PRISM workflow style) ---- */
+
+.neu {
+  background: linear-gradient(145deg, #ffffff 0%, #f3f5fa 100%);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow:
+    7px 7px 18px rgba(166, 180, 200, 0.28),
+    -7px -7px 18px rgba(255, 255, 255, 0.95),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.neu-inset {
+  background: #eef1f6;
+  border-radius: 12px;
+  box-shadow:
+    inset 4px 4px 10px rgba(166, 180, 200, 0.3),
+    inset -4px -4px 10px rgba(255, 255, 255, 0.9);
+}
+
+.grad-cta {
+  background: linear-gradient(135deg, #5B9DF9 0%, #2DD4BF 52%, #A78BFA 100%);
+}
+.grad-cta:hover {
+  filter: brightness(1.06) saturate(1.1);
+}
+
+.grad-text {
+  background: linear-gradient(90deg, #5B9DF9 0%, #2DD4BF 48%, #A78BFA 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
 /* ---- Glassmorphism system (applied selectively, never everywhere) ---- */
 
 .ambient {

@@ -13,6 +13,7 @@ import { Badge } from "@/components/Badge";
 import { Select, useToast } from "@/components/Input";
 import { OutputRenderer } from "@/components/OutputRenderer";
 import AgentPanel from "@/components/AgentPanel";
+import { Ring, ScoreBadge } from "@/components/Ring";
 
 const CLAIM_TONE = {
   VERIFIED: "success",
@@ -97,6 +98,25 @@ export default function OutputDetailPage() {
     }
   }
 
+  async function copyToClipboard() {
+    setBusy("copy");
+    try {
+      const lines: string[] = [];
+      const walk = (obj: unknown) => {
+        if (typeof obj === "string") { if (obj.trim()) lines.push(obj); return; }
+        if (Array.isArray(obj)) obj.forEach(walk);
+        else if (obj && typeof obj === "object") Object.values(obj).forEach(walk);
+      };
+      walk(output?.content ?? {});
+      await navigator.clipboard.writeText(lines.join("\n\n"));
+      toast("Copied to clipboard.", "success");
+    } catch {
+      toast("Clipboard unavailable in this browser.", "error");
+    } finally {
+      setBusy(null);
+    }
+  }
+
   async function doExport(format: string) {
     setBusy(`export-${format}`);
     try {
@@ -150,6 +170,9 @@ export default function OutputDetailPage() {
           <Button variant="ghost" className="!h-9 !px-3 !text-[13px] xl:hidden" onClick={() => setAgentOpen(!agentOpen)}>
             {agentOpen ? "Hide assistant" : "Ask AI"}
           </Button>
+          <Button variant="ghost" className="!h-9 !px-3 !text-[13px]" loading={busy === "copy"} onClick={copyToClipboard}>
+            Copy
+          </Button>
           <span className="text-[11px] text-ink-3 self-center mr-1 hidden sm:inline">Export:</span>
           {exportFormats.map((f) => (
             <Button key={f} variant="secondary" className="!h-9 !px-3 !text-[13px]" loading={busy === `export-${f}`} onClick={() => doExport(f)}>
@@ -159,17 +182,27 @@ export default function OutputDetailPage() {
         </div>
       </div>
 
-      {/* Quality */}
+      {/* Quality — circular metrics, color-coded: green >90 · yellow 70-89 · red <70 */}
       {quality && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3">
-          <Stat label="Overall" value={`${quality.overall}%`} tone="accent" />
-          <Stat label="Accuracy" value={`${quality.accuracy}%`} />
-          <Stat label="Fidelity" value={`${quality.source_fidelity}%`} />
-          <Stat label="Relevance" value={`${quality.relevance}%`} />
-          <Stat label="Readability" value={`${quality.readability}%`} />
-          <Stat label="Audience fit" value={`${quality.audience_fit}%`} />
-          <Stat label="Completeness" value={`${quality.completeness}%`} />
-        </div>
+        <Card>
+          <div className="flex flex-wrap items-center justify-center gap-6">
+            <Ring value={quality.overall} label="Overall" size={104} />
+            <Ring
+              value={validation.validated && s.total
+                ? Math.round(((s.verified ?? 0) + 0.5 * (s.partially_supported ?? 0)) / s.total * 100)
+                : quality.accuracy}
+              label="Fact consistency"
+            />
+            <Ring value={quality.source_fidelity} label="Source alignment" />
+            <Ring value={quality.readability} label="Readability" />
+            <Ring value={quality.audience_fit} label="Audience fit" />
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-2 mt-5">
+            <ScoreBadge value={quality.overall} />
+            <span className="text-[12px] text-ink-3">Overall rating ·</span>
+            <span className="text-[12px] text-ink-3">Accuracy {quality.accuracy}% · Relevance {quality.relevance}% · Completeness {quality.completeness}%</span>
+          </div>
+        </Card>
       )}
 
       {/* Tabs */}
@@ -258,7 +291,17 @@ export default function OutputDetailPage() {
                     <button className="w-full text-left" onClick={() => setOpenClaim(openClaim === i ? null : i)}>
                       <div className="flex items-start justify-between gap-3">
                         <span className="text-[14px] text-ink leading-relaxed">{c.claim}</span>
-                        <Badge tone={CLAIM_TONE[c.status]}>{c.status.replace("_", " ")}</Badge>
+                        <div className="flex items-center gap-2 shrink-0">
+                          {c.status !== "VERIFIED" && (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); setTab("content"); }}
+                              className="text-[11.5px] text-accent-strong font-medium hover:brightness-110"
+                            >
+                              Edit
+                            </button>
+                          )}
+                          <Badge tone={CLAIM_TONE[c.status]}>{c.status.replace("_", " ")}</Badge>
+                        </div>
                       </div>
                     </button>
                     {openClaim === i && (

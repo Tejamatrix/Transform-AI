@@ -10,8 +10,43 @@ import { Card, SectionTitle, Stat } from "@/components/Card";
 import { Button } from "@/components/Button";
 import { Input, Textarea, Select, Field, useToast } from "@/components/Input";
 import { Badge } from "@/components/Badge";
+import { Ring } from "@/components/Ring";
 
 const STEPS = ["Source", "Context", "Output Selection", "Generate"];
+
+const STAGES = ["SOURCE", "INGEST", "UNDERSTAND", "BLUEPRINT", "GENERATE", "VALIDATE"];
+
+const FORMAT_CHIPS = ["PDF", "DOCX", "TXT", "CSV", "PY · JS · JAVA", "PNG · JPG", "MP4 · MOV", "URL"];
+
+function stageIndexFor(step: number, analyzing: boolean, generating: boolean) {
+  if (step === 0) return analyzing ? 2 : 0;
+  if (step === 1) return 3;
+  if (step === 2) return 4;
+  return generating ? 4 : 5;
+}
+
+function StageBar({ stage }: { stage: number }) {
+  return (
+    <div className="flex items-center gap-1.5 flex-wrap">
+      {STAGES.map((s, i) => (
+        <div key={s} className="flex items-center gap-1.5">
+          <div
+            className={`px-2.5 py-1 rounded-full text-[10.5px] font-semibold tracking-wide border ${
+              i < stage
+                ? "bg-mint-soft text-success border-[#C2DCC8]"
+                : i === stage
+                ? "grad-cta text-white border-transparent shadow-soft"
+                : "bg-transparent text-ink-3 border-line-subtle"
+            }`}
+          >
+            {s}
+          </div>
+          {i < STAGES.length - 1 && <span className="text-ink-3 text-[10px]">→</span>}
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default function NewTransformation() {
   const router = useRouter();
@@ -35,6 +70,8 @@ export default function NewTransformation() {
   });
   const [job, setJob] = useState<JobOut | null>(null);
   const [generating, setGenerating] = useState(false);
+  const [dragging, setDragging] = useState(false);
+  const [uploadPct, setUploadPct] = useState<number | null>(null);
 
   // source inputs
   const [pasteText, setPasteText] = useState("");
@@ -110,21 +147,32 @@ export default function NewTransformation() {
     const form = new FormData();
     form.append("project_id", project.id);
     form.append("file", file);
+    setUploadPct(0);
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/sources/upload`,
-        { method: "POST", body: form, headers: { Authorization: `Bearer ${localStorage.getItem("tai_token")}` } }
-      );
-      const data = await res.json();
-      if (!res.ok) {
-        toast(data.detail || "Upload failed", "error");
-      } else if (data.status === "failed") {
-        toast(data.error || "Could not process file", "error");
+      const data: Record<string, unknown> = await new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/sources/upload`);
+        xhr.setRequestHeader("Authorization", `Bearer ${localStorage.getItem("tai_token")}`);
+        xhr.upload.onprogress = (e) => e.lengthComputable && setUploadPct(Math.round((e.loaded / e.total) * 100));
+        xhr.onload = () => {
+          try {
+            resolve(JSON.parse(xhr.responseText));
+          } catch {
+            reject(new Error("Upload failed"));
+          }
+        };
+        xhr.onerror = () => reject(new Error("Upload failed"));
+        xhr.send(form);
+      });
+      if (data.status === "failed") {
+        toast(String(data.error || "Could not process file"), "error");
       } else {
         toast(`${file.name} processed.`, "success");
       }
     } catch {
       toast("Upload failed", "error");
+    } finally {
+      setUploadPct(null);
     }
   }
 
@@ -219,16 +267,16 @@ export default function NewTransformation() {
   return (
     <div className="flex flex-col gap-8">
       {/* Stepper */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-wrap">
         {STEPS.map((label, i) => (
           <div key={label} className="flex items-center gap-2">
             <span
               className={`px-3 py-1.5 rounded-btn text-[13px] border ${
                 i === step
-                  ? "bg-accent/10 text-accent border-accent/30 font-medium"
+                  ? "grad-cta text-white border-transparent font-medium"
                   : i < step
-                  ? "bg-elevated text-ink-2 border-line-subtle"
-                  : "text-ink-3 border-transparent"
+                  ? "bg-mint-soft text-success border-[#C2DCC8]"
+                  : "text-ink-3 border-line-subtle"
               }`}
             >
               {i + 1}. {label}
@@ -237,6 +285,9 @@ export default function NewTransformation() {
           </div>
         ))}
       </div>
+
+      {/* AI workflow stage tracker */}
+      <StageBar stage={stageIndexFor(step, analyzing, generating || job?.status === "running" || false)} />
 
       {/* STEP 0 — SOURCE */}
       {step === 0 && (
@@ -261,7 +312,7 @@ export default function NewTransformation() {
               <div className="grid md:grid-cols-2 gap-4">
                 <Card>
                   <SectionTitle>Paste text</SectionTitle>
-                  <form onSubmit={addText} className="flex flex-col gap-3">
+                  <form onSubmit={addText} className="flex flex-col gap-3" id="text">
                     <Input value={pasteTitle} onChange={(e) => setPasteTitle(e.target.value)} placeholder="Title (e.g. Incident Report)" />
                     <Textarea
                       value={pasteText}
@@ -274,30 +325,61 @@ export default function NewTransformation() {
                     </Button>
                   </form>
                 </Card>
-                <Card>
-                  <SectionTitle>Upload document or add URL</SectionTitle>
-                  <input
-                    ref={fileRef}
-                    type="file"
-                    accept=".pdf,.docx,.txt,.csv,.png,.jpg,.jpeg,.webp,.mp4,.mov,.webm,.avi,.mkv,.py,.js,.ts,.tsx,.jsx,.java,.c,.h,.cpp,.hpp,.cs,.go,.rs,.rb,.php,.swift,.kt,.sql,.sh,.bat,.ps1,.html,.css,.xml,.json,.yaml,.yml,.r,.scala,.lua,.dart,.ipynb"
-                    className="hidden"
-                    onChange={(e) => e.target.files?.[0] && addFile(e.target.files[0])}
-                  />
-                  <Button variant="secondary" className="w-full" onClick={() => fileRef.current?.click()}>
-                    Upload document, code, image or video
-                  </Button>
-                  <form onSubmit={addUrl} className="flex gap-2 mt-3">
-                    <Input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://…" />
-                    <Button type="submit" variant="secondary" disabled={!url.trim()}>
-                      Add
+                <div>
+                  {/* drag-and-drop upload area */}
+                  <div
+                    id="upload"
+                    onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+                    onDragLeave={() => setDragging(false)}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      setDragging(false);
+                      if (e.dataTransfer.files?.[0]) addFile(e.dataTransfer.files[0]);
+                    }}
+                    className={`neu rounded-card p-5 transition-all ${dragging ? "ring-2 ring-accent/60 scale-[1.01]" : ""}`}
+                  >
+                    <div className="text-[14px] font-semibold mb-1">Drag &amp; drop your source here</div>
+                    <p className="text-[12px] text-ink-3 mb-3">or browse — files up to 25 MB</p>
+                    <input
+                      ref={fileRef}
+                      type="file"
+                      accept=".pdf,.docx,.txt,.csv,.png,.jpg,.jpeg,.webp,.mp4,.mov,.webm,.avi,.mkv,.py,.js,.ts,.tsx,.jsx,.java,.c,.h,.cpp,.hpp,.cs,.go,.rs,.rb,.php,.swift,.kt,.sql,.sh,.bat,.ps1,.html,.css,.xml,.json,.yaml,.yml,.r,.scala,.lua,.dart,.ipynb"
+                      className="hidden"
+                      onChange={(e) => e.target.files?.[0] && addFile(e.target.files[0])}
+                    />
+                    <Button variant="secondary" className="w-full" onClick={() => fileRef.current?.click()}>
+                      Browse files
                     </Button>
-                  </form>
-                  <p className="text-[12px] text-ink-3 mt-3">
-                    PDF, DOCX, TXT · CSV (data analysis) · code files (.py .js .java +25 more — AI
-                    explains what the code does) · images (OCR) · videos (Whisper transcript + frame
-                    text). Up to 25 MB. Extracted text is chunked and indexed for grounding.
-                  </p>
-                </Card>
+                    {uploadPct !== null && (
+                      <div className="mt-3">
+                        <div className="h-2 w-full neu-inset rounded-full overflow-hidden">
+                          <div className="h-full grad-cta rounded-full" style={{ width: `${uploadPct}%`, transition: "width 200ms ease" }} />
+                        </div>
+                        <div className="text-[11px] text-ink-3 mt-1">Uploading… {uploadPct}%</div>
+                      </div>
+                    )}
+                    <div className="flex flex-wrap gap-1.5 mt-4">
+                      {FORMAT_CHIPS.map((f) => (
+                        <span key={f} className="px-2 py-0.5 rounded-full bg-elevated border border-line-subtle text-[10.5px] text-ink-3 font-medium">
+                          {f}
+                        </span>
+                      ))}
+                    </div>
+                    <p className="text-[11.5px] text-ink-3 mt-3 leading-relaxed">
+                      Documents · CSV data · code files (AI explains what they do) · images (OCR) ·
+                      videos (transcript + frame text). Extracted text is indexed for grounding.
+                    </p>
+                  </div>
+                  <div className="neu rounded-card p-5 mt-4" id="url">
+                    <div className="text-[14px] font-semibold mb-1">Import from URL</div>
+                    <form onSubmit={addUrl} className="flex gap-2 mt-2">
+                      <Input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://…" />
+                      <Button type="submit" variant="secondary" disabled={!url.trim()}>
+                        Add
+                      </Button>
+                    </form>
+                  </div>
+                </div>
               </div>
 
               <div>
@@ -361,7 +443,22 @@ export default function NewTransformation() {
           </div>
 
           <Card>
-            <SectionTitle>Summary</SectionTitle>
+            <SectionTitle
+              action={
+                <span className="flex items-center gap-2">
+                  <Ring value={Math.round(c.confidence * 100)} label="Source confidence" size={64} />
+                </span>
+              }
+            >
+              Summary &amp; signals
+            </SectionTitle>
+            <div className="flex flex-wrap gap-1.5 mb-4">
+              {c.entities.slice(0, 8).map((e, i) => (
+                <span key={i} className="px-2.5 py-1 rounded-full bg-mint-soft border border-mint/50 text-[11.5px] text-accent-strong font-medium">
+                  {e.name}
+                </span>
+              ))}
+            </div>
             <p className="text-[14px] text-ink-2 leading-relaxed">{c.summary}</p>
           </Card>
 
