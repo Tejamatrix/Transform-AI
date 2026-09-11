@@ -10,7 +10,7 @@ export function Card({
   onClick?: () => void;
 }) {
   const base =
-    "bg-surface border border-line-subtle rounded-card p-4 anim-fade-in-up shadow-soft";
+    "glass glass-brighten rounded-card p-4 anim-fade-in-up";
   if (onClick) {
     return (
       <div
@@ -45,7 +45,7 @@ export function Stat({ label, value, tone = "default" }: { label: string; value:
     warn: "text-warn",
   };
   return (
-    <div className="bg-elevated border border-line-subtle rounded-card px-4 py-3">
+    <div className="glass rounded-card px-4 py-3">
       <div className="text-xs text-ink-3">{label}</div>
       <div className={`text-xl font-semibold mt-0.5 ${colors[tone]}`}>{value}</div>
     </div>

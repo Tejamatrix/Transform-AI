@@ -44,7 +44,7 @@ export default function LoginPage() {
           <h1 className="mt-6 text-xl font-semibold">Welcome back</h1>
           <p className="mt-1 text-[13px] text-ink-2">Sign in to your transformation workspace</p>
         </div>
-        <form onSubmit={submit} className="bg-surface border border-line-subtle rounded-card p-6 flex flex-col gap-4 shadow-soft">
+        <form onSubmit={submit} className="glass-deep rounded-card p-6 flex flex-col gap-4">
           <Field label="Email">
             <Input
               type="email"

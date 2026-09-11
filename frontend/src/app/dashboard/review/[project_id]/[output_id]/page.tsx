@@ -254,7 +254,7 @@ export default function OutputDetailPage() {
               </div>
               <div className="flex flex-col gap-2">
                 {(validation.claims || []).map((c, i) => (
-                  <Card key={i}>
+                  <Card key={i} className={c.status !== "VERIFIED" ? (c.status === "UNSUPPORTED" ? "glow-warn" : "glow-selected") : ""}>
                     <button className="w-full text-left" onClick={() => setOpenClaim(openClaim === i ? null : i)}>
                       <div className="flex items-start justify-between gap-3">
                         <span className="text-[14px] text-ink leading-relaxed">{c.claim}</span>

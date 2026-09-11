@@ -165,8 +165,59 @@ a {
   transform: translateY(-3px);
 }
 
-/* Staggered entrance for direct children */
-.stagger > * {
+/* ---- Glassmorphism system (applied selectively, never everywhere) ---- */
+
+.ambient {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  background:
+    radial-gradient(640px 420px at 10% 6%, rgba(89, 185, 155, 0.16), transparent 62%),
+    radial-gradient(720px 520px at 90% 14%, rgba(99, 102, 241, 0.09), transparent 62%),
+    radial-gradient(640px 520px at 68% 92%, rgba(24, 183, 165, 0.11), transparent 60%),
+    radial-gradient(500px 380px at 24% 88%, rgba(245, 239, 207, 0.5), transparent 65%),
+    linear-gradient(160deg, #EEF3ED 0%, #F2F1E9 52%, #E9EEF5 100%);
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.66);
+  backdrop-filter: blur(20px) saturate(1.45);
+  -webkit-backdrop-filter: blur(20px) saturate(1.45);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  box-shadow: 0 8px 32px rgba(35, 38, 32, 0.08);
+}
+
+.glass-deep {
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(24px) saturate(1.5);
+  -webkit-backdrop-filter: blur(24px) saturate(1.5);
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  box-shadow: 0 10px 36px rgba(35, 38, 32, 0.1);
+}
+
+.glass-brighten {
+  transition: background 200ms ease, box-shadow 250ms ease, transform 200ms ease;
+}
+.glass-brighten:hover {
+  background: rgba(255, 255, 255, 0.84);
+  box-shadow: 0 16px 44px rgba(35, 38, 32, 0.13);
+}
+
+/* selected-element glow: extremely subtle indigo */
+.glow-selected {
+  box-shadow:
+    0 0 0 1px rgba(99, 102, 241, 0.22),
+    0 10px 36px rgba(99, 102, 241, 0.16);
+}
+
+.glow-warn {
+  box-shadow:
+    0 0 0 1px rgba(176, 129, 21, 0.2),
+    0 8px 28px rgba(176, 129, 21, 0.1);
+}
+
+/* Staggered entrance for direct children */.stagger > * {
   animation: fade-in-up 300ms ease-out both;
 }
 .stagger > *:nth-child(1) { animation-delay: 0ms; }

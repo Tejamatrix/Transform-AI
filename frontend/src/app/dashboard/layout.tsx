@@ -49,7 +49,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <div className="min-h-screen flex bg-bg">
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex w-56 shrink-0 border-r border-line-subtle bg-surface flex-col h-screen sticky top-0">
+      <aside className="hidden md:flex w-56 shrink-0 glass-deep border-l-0 border-r-0 border-t-0 border-b flex-col h-screen sticky top-0">
         <div className="px-5 h-16 flex items-center border-b border-line-subtle">{brand}</div>
         <nav className="flex-1 px-3 py-4 flex flex-col gap-1">{navLinks()}</nav>
         <div className="px-3 py-4 border-t border-line-subtle">
@@ -67,7 +67,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {menuOpen && (
         <div className="fixed inset-0 z-50 md:hidden" role="dialog">
           <div className="absolute inset-0 bg-ink/40 backdrop-blur-sm" onClick={() => setMenuOpen(false)} />
-          <aside className="absolute left-0 top-0 bottom-0 w-64 bg-surface border-r border-line-subtle flex flex-col shadow-lift anim-fade-in-up">
+          <aside className="absolute left-0 top-0 bottom-0 w-64 glass-deep border-y-0 border-r-0 flex flex-col anim-fade-in-up">
             <div className="px-5 h-16 flex items-center justify-between border-b border-line-subtle">
               {brand}
               <button
@@ -94,7 +94,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       <main className="flex-1 min-w-0">
         {/* Mobile top bar */}
-        <div className="md:hidden h-14 flex items-center justify-between px-4 border-b border-line-subtle bg-surface sticky top-0 z-40">
+        <div className="md:hidden h-14 flex items-center justify-between px-4 glass border-x-0 border-t-0 border-b sticky top-0 z-40">
           {brand}
           <button
             onClick={() => setMenuOpen(true)}
@@ -108,7 +108,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
 
         {/* Desktop header */}
-        <header className="hidden md:flex h-16 border-b border-line-subtle items-center px-8 sticky top-0 bg-bg/80 backdrop-blur z-10">
+        <header className="hidden md:flex h-16 items-center px-8 sticky top-0 glass border-x-0 border-t-0 z-10">
           <h1 className="text-[15px] font-medium text-ink-2">
             {NAV.find((n) => (n.exact ? pathname === n.href : pathname.startsWith(n.href)))?.label ||
               "Workspace"}

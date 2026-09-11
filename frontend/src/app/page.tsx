@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { Gyro } from "@/components/Gyro";
 
 const FLOW = ["Ingest", "Understand", "Blueprint", "Plan", "Generate", "Validate", "Review", "Export"];
 
@@ -39,7 +40,7 @@ const FLOW_INFO: Record<string, { title: string; body: string; points: string[] 
   Review: {
     title: "Human judgment, built in",
     body: "Nothing is locked. Edit any section, shorten, expand, change tone or audience, rewrite — or regenerate entirely. Every change is versioned.",
-    points: ["Inline edits with instant preview", "Version history (v1, v2, v3â€¦) with actions", "Regenerate from the same blueprint anytime"],
+    points: ["Inline edits with instant preview", "Version history (v1, v2, v3…) with actions", "Regenerate from the same blueprint anytime"],
   },
   Export: {
     title: "Production-ready files",
@@ -70,8 +71,8 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-bg text-ink overflow-x-clip">
-      {/* minimal modern navigation */}
-      <nav className="sticky top-0 z-40 bg-bg/80 backdrop-blur border-b border-line-subtle">
+      {/* minimal modern navigation — glass */}
+      <nav className="sticky top-0 z-40 glass border-x-0 border-t-0">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/" className="text-[17px] font-bold tracking-tight">
             Pr<span className="text-accent">ism</span>
@@ -141,48 +142,50 @@ export default function Landing() {
               </Link>
             </div>
             <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-[13px] text-ink-3">
-              <span className="flex items-center gap-1.5"><span className="text-accent">âœ“</span> 9 source types</span>
-              <span className="flex items-center gap-1.5"><span className="text-accent">âœ“</span> 7 output formats</span>
-              <span className="flex items-center gap-1.5"><span className="text-accent">âœ“</span> Works offline</span>
+              <span className="flex items-center gap-1.5"><span className="text-accent">✓</span> 9 source types</span>
+              <span className="flex items-center gap-1.5"><span className="text-accent">✓</span> 7 output formats</span>
+              <span className="flex items-center gap-1.5"><span className="text-accent">✓</span> Works offline</span>
             </div>
           </div>
 
-          {/* product mockup card — clean, floating */}
+          {/* product mockup card — glass, floating with gyro */}
           <div className="relative hidden lg:block">
             <div className="float-slower absolute -top-6 -right-4 w-24 h-24 bg-mint blob opacity-70" aria-hidden />
-            <div className="relative bg-surface rounded-card border border-line-subtle shadow-lift p-6 rotate-1">
-              <div className="flex items-center gap-1.5 mb-4">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#F0C9C5]" />
-                <span className="w-2.5 h-2.5 rounded-full bg-highlight" />
-                <span className="w-2.5 h-2.5 rounded-full bg-mint" />
+            <Gyro strength={14} tilt={5}>
+              <div className="relative glass-deep rounded-card p-6 rotate-1 glow-selected">
+                <div className="flex items-center gap-1.5 mb-4">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#F0C9C5]" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-highlight" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-mint" />
+                </div>
+                <div className="text-[12px] text-ink-3 mb-1">TRANSFORMATION BLUEPRINT</div>
+                <div className="text-[15px] font-semibold">Cybersecurity Incident — March 2026</div>
+                <div className="mt-4 grid grid-cols-2 gap-2 text-[12px]">
+                  <div className="bg-white/60 backdrop-blur-sm rounded-xl px-3 py-2"><span className="text-ink-3">Domain</span><div className="font-semibold text-accent-strong">Cybersecurity</div></div>
+                  <div className="bg-white/60 backdrop-blur-sm rounded-xl px-3 py-2"><span className="text-ink-3">Intent</span><div className="font-semibold">Alert</div></div>
+                  <div className="bg-white/60 backdrop-blur-sm rounded-xl px-3 py-2"><span className="text-ink-3">Entities</span><div className="font-semibold">18</div></div>
+                  <div className="bg-white/60 backdrop-blur-sm rounded-xl px-3 py-2"><span className="text-ink-3">Key facts</span><div className="font-semibold">24</div></div>
+                </div>
+                <div className="mt-4 flex flex-col gap-2">
+                  {["The incident affected 14 departments.", "38,000 customer records exposed.", "Mitigation completed by 20 March."].map((t, i) => (
+                    <div key={i} className="flex items-center gap-2 text-[12.5px] text-ink-2">
+                      <span className={`w-1.5 h-1.5 rounded-full ${i === 2 ? "bg-accent" : "bg-success"}`} />
+                      {t}
+                      <span className="ml-auto text-[10.5px] text-ink-3 border border-white/70 bg-white/60 rounded-full px-2 py-0.5">p.{7 + i}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <div className="text-[12px] text-ink-3 mb-1">TRANSFORMATION BLUEPRINT</div>
-              <div className="text-[15px] font-semibold">Cybersecurity Incident — March 2026</div>
-              <div className="mt-4 grid grid-cols-2 gap-2 text-[12px]">
-                <div className="bg-mint-soft rounded-xl px-3 py-2"><span className="text-ink-3">Domain</span><div className="font-semibold text-accent-strong">Cybersecurity</div></div>
-                <div className="bg-highlight rounded-xl px-3 py-2"><span className="text-ink-3">Intent</span><div className="font-semibold">Alert</div></div>
-                <div className="bg-highlight rounded-xl px-3 py-2"><span className="text-ink-3">Entities</span><div className="font-semibold">18</div></div>
-                <div className="bg-mint-soft rounded-xl px-3 py-2"><span className="text-ink-3">Key facts</span><div className="font-semibold">24</div></div>
-              </div>
-              <div className="mt-4 flex flex-col gap-2">
-                {["The incident affected 14 departments.", "38,000 customer records exposed.", "Mitigation completed by 20 March."].map((t, i) => (
-                  <div key={i} className="flex items-center gap-2 text-[12.5px] text-ink-2">
-                    <span className={`w-1.5 h-1.5 rounded-full ${i === 2 ? "bg-accent" : "bg-success"}`} />
-                    {t}
-                    <span className="ml-auto text-[10.5px] text-ink-3 border border-line-subtle rounded-full px-2 py-0.5">p.{7 + i}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
+            </Gyro>
             {/* mini stat card overlapping */}
-            <div className="absolute -bottom-6 -left-8 bg-surface border border-line-subtle rounded-card shadow-lift px-4 py-3 -rotate-2">
+            <div className="absolute -bottom-6 -left-8 glass-deep rounded-card px-4 py-3 -rotate-2">
               <div className="text-[11px] text-ink-3">FACT VALIDATION</div>
-              <div className="text-[15px] font-bold text-success">31 verified âœ“</div>
-              <div className="text-[12px] text-warn">2 partial Â· 1 unsupported</div>
+              <div className="text-[15px] font-bold text-success">31 verified ✓</div>
+              <div className="text-[12px] text-warn">2 partial · 1 unsupported</div>
             </div>
             {/* floating mint chip */}
             <div className="float-slow absolute -top-8 -left-10 bg-mint text-white text-[12px] font-semibold rounded-2xl px-4 py-2.5 shadow-lift rotate-3">
-              âœ“ Blueprint ready
+              ✓ Blueprint ready
             </div>
           </div>
         </div>
@@ -276,7 +279,7 @@ export default function Landing() {
             {OUTPUTS.map(([title, desc], i) => (
               <div
                 key={title}
-                className={`lift bg-surface border border-line-subtle rounded-card p-6 shadow-soft ${
+                className={`lift glass glass-brighten rounded-card p-6 ${
                   i === 0 ? "md:col-span-2 bg-gradient-to-br from-surface to-mint-soft" : ""
                 }`}
               >
@@ -305,7 +308,7 @@ export default function Landing() {
           </div>
           <div className="mt-12 grid md:grid-cols-3 gap-4 stagger">
             {TRUST.map(([title, desc]) => (
-              <div key={title} className="lift bg-surface border border-line-subtle rounded-card p-6 shadow-soft">
+              <div key={title} className="lift glass glass-brighten rounded-card p-6">
                 <div className="text-[16px] font-semibold">{title}</div>
                 <div className="mt-1.5 text-[13.5px] text-ink-2 leading-relaxed">{desc}</div>
               </div>
@@ -336,7 +339,7 @@ export default function Landing() {
       <footer className="border-t border-line-subtle bg-surface">
         <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between text-[13px] text-ink-3">
           <span>Prism — AI-powered multimodal content transformation</span>
-          <span>Mint Â· Teal Â· Charcoal</span>
+          <span>Mint · Teal · Charcoal</span>
         </div>
       </footer>
     </div>
