@@ -118,6 +118,7 @@ export default function NewTransformation() {
         setPasteText("");
         setPasteTitle("");
       }
+      if (project) await refreshSources(project.id);
     } catch (err) {
       toast(err instanceof Error ? err.message : "Failed to add source", "error");
     }
@@ -137,9 +138,17 @@ export default function NewTransformation() {
         toast("URL source added.", "success");
         setUrl("");
       }
+      if (project) await refreshSources(project.id);
     } catch (err) {
       toast(err instanceof Error ? err.message : "Failed to add URL", "error");
     }
+  }
+
+  async function refreshSources(pid: string) {
+    try {
+      const list = await api<SourceOut[]>(`/api/sources?project_id=${pid}`);
+      setSources(list);
+    } catch {}
   }
 
   async function addFile(file: File) {
@@ -155,13 +164,14 @@ export default function NewTransformation() {
         xhr.setRequestHeader("Authorization", `Bearer ${localStorage.getItem("tai_token")}`);
         xhr.upload.onprogress = (e) => e.lengthComputable && setUploadPct(Math.round((e.loaded / e.total) * 100));
         xhr.onload = () => {
+          let parsed: Record<string, unknown> = {};
           try {
-            resolve(JSON.parse(xhr.responseText));
-          } catch {
-            reject(new Error("Upload failed"));
-          }
+            parsed = JSON.parse(xhr.responseText);
+          } catch {}
+          if (xhr.status >= 200 && xhr.status < 300) resolve(parsed);
+          else reject(new Error(String(parsed.detail || `Upload failed (${xhr.status})`)));
         };
-        xhr.onerror = () => reject(new Error("Upload failed"));
+        xhr.onerror = () => reject(new Error("Cannot reach the server. Check your connection."));
         xhr.send(form);
       });
       if (data.status === "failed") {
@@ -169,8 +179,10 @@ export default function NewTransformation() {
       } else {
         toast(`${file.name} processed.`, "success");
       }
-    } catch {
-      toast("Upload failed", "error");
+      await refreshSources(project.id);
+    } catch (err) {
+      toast(err instanceof Error ? err.message : "Upload failed", "error");
+      if (project) await refreshSources(project.id);
     } finally {
       setUploadPct(null);
     }
