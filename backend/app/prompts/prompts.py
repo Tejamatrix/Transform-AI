@@ -1,4 +1,4 @@
-"""Versioned prompt registry.
+﻿"""Versioned prompt registry.
 
 Prompts live here, not in API handlers or service logic. Structured context
 blocks (---MARKER---) are embedded in prompts so both a real LLM and the
@@ -30,7 +30,7 @@ def render(name: str, v: int, **context) -> tuple[str, str]:
 # ------------------------------------------------------------------ analyzer
 
 _register("analyzer", 1, """
-You are the Content Understanding Engine of TransformAI.
+You are the Content Understanding Engine of Prism.
 
 TASK=analyzer
 
@@ -63,7 +63,7 @@ EXTRACTION ACCURACY RULES:
 
 # Code sources: the analyzer becomes a code-understanding engine.
 _register("code_analyzer", 1, """
-You are the Code Understanding Engine of TransformAI.
+You are the Code Understanding Engine of Prism.
 
 TASK=code_analyzer
 
@@ -100,7 +100,7 @@ Semantics for code:
 _gen_common = """
 TASK=generate:{task}
 
-You are an output generator for TransformAI. You receive the TRANSFORMATION
+You are an output generator for Prism. You receive the TRANSFORMATION
 BLUEPRINT (the single source of truth) plus retrieved EVIDENCE excerpts from
 the original sources. Generate ONLY a JSON object matching the schema for this
 output type. Use only facts present in the blueprint/evidence. Respect the
@@ -123,10 +123,10 @@ FRAMING RULES (quality contract):
 3. Never repeat the same sentence or fact twice across sections; merge and
    synthesize instead.
 4. Keep every number, date and name EXACTLY as given in the blueprint/evidence.
-5. Vary sentence openers; no formulaic filler ("In today's world…", "It is
-   important to note…").
+5. Vary sentence openers; no formulaic filler ("In today's worldâ€¦", "It is
+   important to noteâ€¦").
 6. Attribute: when a claim comes from a specific source, say so naturally
-   ("according to the incident report…").
+   ("according to the incident reportâ€¦").
 7. Close each major section with a forward-looking or decisive statement.
 
 Context block legend:
@@ -151,7 +151,7 @@ for _task, _schema in _schemas.items():
 # ------------------------------------------------------------------ validator
 
 _register("validator", 1, """
-You are the Fact Validation Engine of TransformAI.
+You are the Fact Validation Engine of Prism.
 
 TASK=validator
 
@@ -168,7 +168,7 @@ Never invent evidence. If no evidence exists, status must be UNSUPPORTED.
 # ------------------------------------------------------------------ quality
 
 _register("quality", 1, """
-You are the Quality Engine of TransformAI.
+You are the Quality Engine of Prism.
 
 TASK=quality
 
@@ -181,7 +181,7 @@ AI-assisted indicators, not guarantees.
 # ------------------------------------------------------------------ editing
 
 _register("editor", 1, """
-You are the inline Output Editor of TransformAI.
+You are the inline Output Editor of Prism.
 
 TASK=editor
 
@@ -196,7 +196,7 @@ relationships and factual grounding.
 # ------------------------------------------------------------------ agent
 
 _register("agent", 1, """
-You are the TransformAI grounding assistant.
+You are the Prism grounding assistant.
 
 TASK=agent
 

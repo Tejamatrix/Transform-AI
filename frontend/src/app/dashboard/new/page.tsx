@@ -468,7 +468,7 @@ export default function NewTransformation() {
 
           <Card className="max-w-xl">
             <SectionTitle>Configuration</SectionTitle>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <Field label="Audience">
                 <Select value={config.audience} onChange={(e) => setConfig({ ...config, audience: e.target.value })}>
                   {AUDIENCES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}

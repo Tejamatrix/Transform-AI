@@ -1,4 +1,4 @@
-"""Source ingestion service — pluggable extractors per source type."""
+﻿"""Source ingestion service — pluggable extractors per source type."""
 from __future__ import annotations
 
 import io
@@ -241,7 +241,7 @@ class UrlExtractor(BaseExtractor):
             raise IngestionError("URL must start with http:// or https://")
         try:
             resp = httpx.get(url, timeout=20, follow_redirects=True,
-                             headers={"User-Agent": "Mozilla/5.0 (compatible; TransformAI/1.0)"})
+                             headers={"User-Agent": "Mozilla/5.0 (compatible; Prism/1.0)"})
             resp.raise_for_status()
         except httpx.TimeoutException:
             raise IngestionError("The URL took too long to respond.")

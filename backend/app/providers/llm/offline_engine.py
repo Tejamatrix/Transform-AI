@@ -1,4 +1,4 @@
-"""Offline deterministic "LLM" engine.
+﻿"""Offline deterministic "LLM" engine.
 
 The service layer sends the same prompts it would send to a real LLM. This
 engine parses the structured context blocks (---BLUEPRINT---, ---EVIDENCE---,
@@ -69,28 +69,28 @@ AUDIENCE_LABELS = {
 # Full native text is produced by a live LLM provider (see prompts LANGUAGE RULE).
 LANG_HEADINGS = {
     "hindi": {
-        "Executive Overview": "कार्यकारी अवलोकन",
-        "Key Findings": "मुख्य निष्कर्ष",
-        "Important Statistics": "महत्वपूर्ण आंकड़े",
-        "Risks": "जोखिम",
-        "Business / Operational Impact": "व्यावसायिक / परिचालन प्रभाव",
-        "Recommendations": "सिफ़ारिशें",
-        "Conclusion": "निष्कर्ष",
-        "Timeline of Events": "घटनाओं की समयरेखा",
-        "Recommendations & Next Steps": "सिफ़ारिशें और अगले कदम",
-        "Finding": "निष्कर्ष",
+        "Executive Overview": "à¤•à¤¾à¤°à¥à¤¯à¤•à¤¾à¤°à¥€ à¤…à¤µà¤²à¥‹à¤•à¤¨",
+        "Key Findings": "à¤®à¥à¤–à¥à¤¯ à¤¨à¤¿à¤·à¥à¤•à¤°à¥à¤·",
+        "Important Statistics": "à¤®à¤¹à¤¤à¥à¤µà¤ªà¥‚à¤°à¥à¤£ à¤†à¤‚à¤•à¤¡à¤¼à¥‡",
+        "Risks": "à¤œà¥‹à¤–à¤¿à¤®",
+        "Business / Operational Impact": "à¤µà¥à¤¯à¤¾à¤µà¤¸à¤¾à¤¯à¤¿à¤• / à¤ªà¤°à¤¿à¤šà¤¾à¤²à¤¨ à¤ªà¥à¤°à¤­à¤¾à¤µ",
+        "Recommendations": "à¤¸à¤¿à¤«à¤¼à¤¾à¤°à¤¿à¤¶à¥‡à¤‚",
+        "Conclusion": "à¤¨à¤¿à¤·à¥à¤•à¤°à¥à¤·",
+        "Timeline of Events": "à¤˜à¤Ÿà¤¨à¤¾à¤“à¤‚ à¤•à¥€ à¤¸à¤®à¤¯à¤°à¥‡à¤–à¤¾",
+        "Recommendations & Next Steps": "à¤¸à¤¿à¤«à¤¼à¤¾à¤°à¤¿à¤¶à¥‡à¤‚ à¤”à¤° à¤…à¤—à¤²à¥‡ à¤•à¤¦à¤®",
+        "Finding": "à¤¨à¤¿à¤·à¥à¤•à¤°à¥à¤·",
     },
     "telugu": {
-        "Executive Overview": "కార్యనిర్వాహక అవలోకనం",
-        "Key Findings": "ముఖ్యమైన ఆవిష్కరణలు",
-        "Important Statistics": "ముఖ్యమైన గణాంకాలు",
-        "Risks": "ప్రమాదాలు",
-        "Business / Operational Impact": "వ్యాపార / కార్యాచరణ ప్రభావం",
-        "Recommendations": "సిఫారసులు",
-        "Conclusion": "ముగింపు",
-        "Timeline of Events": "సంఘటనల కాలక్రమం",
-        "Recommendations & Next Steps": "సిఫారసులు మరియు తదుపరి చర్యలు",
-        "Finding": "ఆవిష్కరణ",
+        "Executive Overview": "à°•à°¾à°°à±à°¯à°¨à°¿à°°à±à°µà°¾à°¹à°• à°…à°µà°²à±‹à°•à°¨à°‚",
+        "Key Findings": "à°®à±à°–à±à°¯à°®à±ˆà°¨ à°†à°µà°¿à°·à±à°•à°°à°£à°²à±",
+        "Important Statistics": "à°®à±à°–à±à°¯à°®à±ˆà°¨ à°—à°£à°¾à°‚à°•à°¾à°²à±",
+        "Risks": "à°ªà±à°°à°®à°¾à°¦à°¾à°²à±",
+        "Business / Operational Impact": "à°µà±à°¯à°¾à°ªà°¾à°° / à°•à°¾à°°à±à°¯à°¾à°šà°°à°£ à°ªà±à°°à°­à°¾à°µà°‚",
+        "Recommendations": "à°¸à°¿à°«à°¾à°°à°¸à±à°²à±",
+        "Conclusion": "à°®à±à°—à°¿à°‚à°ªà±",
+        "Timeline of Events": "à°¸à°‚à°˜à°Ÿà°¨à°² à°•à°¾à°²à°•à±à°°à°®à°‚",
+        "Recommendations & Next Steps": "à°¸à°¿à°«à°¾à°°à°¸à±à°²à± à°®à°°à°¿à°¯à± à°¤à°¦à±à°ªà°°à°¿ à°šà°°à±à°¯à°²à±",
+        "Finding": "à°†à°µà°¿à°·à±à°•à°°à°£",
     },
 }
 
@@ -197,7 +197,7 @@ def run_analyzer(text: str, source_title: str) -> dict:
             stats = [m.group(0).strip() for m in STAT_RE.finditer(s) if re.search(r"\d", m.group(0))]
             for st in stats[:2]:
                 if len(statistics) < 12:
-                    statistics.append(f"{st} — {s[:90]}{'…' if len(s) > 90 else ''}")
+                    statistics.append(f"{st} — {s[:90]}{'â€¦' if len(s) > 90 else ''}")
         if any(w in s.lower() for w in THREAT_WORDS) and len(risks) < 8:
             risks.append(s)
         if any(w in s.lower() for w in RECO_WORDS) and len(recommendations) < 8:
@@ -339,7 +339,7 @@ def run_generate(task: str, bp: dict, config: dict, evidence: list[str], bluepri
             {"heading": _t(config, "Conclusion"), "body": (
                 f"The {domain_label.lower()} situation described in the source is {('material and time-sensitive' if ctx['intent'] == 'alert' else 'relevant')} "
                 f"for {aud}. Acting on the {len(ctx['recs']) or 'stated'} recommendations above — beginning with "
-                f"'{(ctx['recs'][0][:120] if ctx['recs'] else 'a structured review of the source')}…' — "
+                f"'{(ctx['recs'][0][:120] if ctx['recs'] else 'a structured review of the source')}â€¦' — "
                 f"addresses the primary exposures. Underlying analysis confidence: {int((bp.get('confidence', 0.7)) * 100)}%."
             )},
         ]
@@ -375,19 +375,19 @@ def run_generate(task: str, bp: dict, config: dict, evidence: list[str], bluepri
                 "key_insights": facts[:4],
                 "body": (
                     f"{lead}\n\n"
-                    + "\n".join(f"• {f}" for f in facts[1:4])
+                    + "\n".join(f"â€¢ {f}" for f in facts[1:4])
                     + f"\n\nWhat does this mean for {aud}? The full breakdown is in our advisory."
                 ),
                 "cta": "Follow for updates and share your perspective.",
-                "hashtags": ["#TransformAI", f"#{ctx['domain'].title()}", "#Insights", "#Leadership"],
+                "hashtags": ["#Prism", f"#{ctx['domain'].title()}", "#Insights", "#Leadership"],
             })
         return {"variants": variants, "language_note": lang_note}
 
     if task == "x_thread":
         posts = []
-        posts.append(f"{_tone_wrap(title_hint, config)} A short thread. 🧵" if config.get("tone") == "conversational" else f"{_tone_wrap(title_hint, config)}")
+        posts.append(f"{_tone_wrap(title_hint, config)} A short thread. ðŸ§µ" if config.get("tone") == "conversational" else f"{_tone_wrap(title_hint, config)}")
         for f in facts[:5]:
-            snippet = f if len(f) <= 270 else f[:267] + "…"
+            snippet = f if len(f) <= 270 else f[:267] + "â€¦"
             posts.append(snippet)
         posts.append(f"Bottom line: {ctx['recs'][0] if ctx['recs'] else 'Stay informed and review the full report.'}")
         posts = [p[:280] for p in posts]
@@ -725,7 +725,7 @@ def run_agent(question: str, evidence_chunks: list[dict]) -> dict:
 
     summary_line = f"In short, {'; '.join(p.split(' — reported')[0].strip('.').lower() for p in points[:2])}."
 
-    answer = lead + "\n\n" + "\n".join(f"• {p}" for p in points) + "\n\n" + summary_line
+    answer = lead + "\n\n" + "\n".join(f"â€¢ {p}" for p in points) + "\n\n" + summary_line
 
     evidence = []
     for chunk in used.values():

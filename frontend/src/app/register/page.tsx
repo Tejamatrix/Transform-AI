@@ -44,7 +44,7 @@ export default function RegisterPage() {
       <div className="w-full max-w-sm relative">
         <div className="text-center mb-8">
           <Link href="/" className="text-[17px] font-bold tracking-tight">
-            Transform<span className="text-accent">AI</span>
+            Pr<span className="text-accent">ism</span>
           </Link>
           <h1 className="mt-6 text-xl font-semibold">Create your account</h1>
           <p className="mt-1 text-[13px] text-ink-2">Start transforming in minutes</p>

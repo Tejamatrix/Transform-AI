@@ -1,4 +1,4 @@
-"""Content localization service.
+﻿"""Content localization service.
 
 Offline mode: translates generated content values (JSON keys stay English)
 via a free translation endpoint so Hindi/Telugu outputs work without a paid
@@ -28,7 +28,7 @@ def _split_for_translation(text: str, limit: int = 2600) -> list[str]:
         return [text]
     parts: list[str] = []
     buf = ""
-    for piece in re.split(r"(?<=[.!?…\n])\s+", text):
+    for piece in re.split(r"(?<=[.!?â€¦\n])\s+", text):
         if len(buf) + len(piece) + 1 > limit and buf:
             parts.append(buf)
             buf = piece
@@ -88,7 +88,7 @@ def _via_mymemory(text: str, target: str) -> str | None:
         try:
             resp = httpx.get("https://api.mymemory.translated.net/get",
                              params={"q": text, "langpair": f"en|{target}"}, timeout=_TIMEOUT,
-                             headers={"User-Agent": "TransformAI/1.0"})
+                             headers={"User-Agent": "Prism/1.0"})
             if resp.status_code == 429:
                 import time as _time
                 _time.sleep(0.6 * (attempt + 1))

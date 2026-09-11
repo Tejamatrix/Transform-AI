@@ -34,12 +34,12 @@ const FLOW_INFO: Record<string, { title: string; body: string; points: string[] 
   Validate: {
     title: "Every claim gets checked",
     body: "Generated claims are compared against retrieved evidence and classified: verified, partially supported or unsupported. Nothing hallucinated slips through silently.",
-    points: ["Color-coded grounding overlay in the output", "Click a claim → exact source page and quote", "Conflicts between sources flagged for human review"],
+    points: ["Color-coded grounding overlay in the output", "Click a claim â†’ exact source page and quote", "Conflicts between sources flagged for human review"],
   },
   Review: {
     title: "Human judgment, built in",
     body: "Nothing is locked. Edit any section, shorten, expand, change tone or audience, rewrite — or regenerate entirely. Every change is versioned.",
-    points: ["Inline edits with instant preview", "Version history (v1, v2, v3…) with actions", "Regenerate from the same blueprint anytime"],
+    points: ["Inline edits with instant preview", "Version history (v1, v2, v3â€¦) with actions", "Regenerate from the same blueprint anytime"],
   },
   Export: {
     title: "Production-ready files",
@@ -74,7 +74,7 @@ export default function Landing() {
       <nav className="sticky top-0 z-40 bg-bg/80 backdrop-blur border-b border-line-subtle">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/" className="text-[17px] font-bold tracking-tight">
-            Transform<span className="text-accent">AI</span>
+            Pr<span className="text-accent">ism</span>
           </Link>
           <div className="hidden md:flex items-center gap-7 text-[14px] text-ink-2">
             <a href="#pipeline" className="hover:text-ink">How it works</a>
@@ -122,7 +122,7 @@ export default function Landing() {
               .
             </h1>
             <p className="mt-6 text-[16px] text-ink-2 leading-relaxed max-w-xl">
-              Upload reports, code, images, videos or URLs. TransformAI understands the content
+              Upload reports, code, images, videos or URLs. Prism understands the content
               once, builds a validated blueprint, and generates every deliverable from it —
               with every claim traceable to its source.
             </p>
@@ -141,9 +141,9 @@ export default function Landing() {
               </Link>
             </div>
             <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-[13px] text-ink-3">
-              <span className="flex items-center gap-1.5"><span className="text-accent">✓</span> 9 source types</span>
-              <span className="flex items-center gap-1.5"><span className="text-accent">✓</span> 7 output formats</span>
-              <span className="flex items-center gap-1.5"><span className="text-accent">✓</span> Works offline</span>
+              <span className="flex items-center gap-1.5"><span className="text-accent">âœ“</span> 9 source types</span>
+              <span className="flex items-center gap-1.5"><span className="text-accent">âœ“</span> 7 output formats</span>
+              <span className="flex items-center gap-1.5"><span className="text-accent">âœ“</span> Works offline</span>
             </div>
           </div>
 
@@ -177,12 +177,12 @@ export default function Landing() {
             {/* mini stat card overlapping */}
             <div className="absolute -bottom-6 -left-8 bg-surface border border-line-subtle rounded-card shadow-lift px-4 py-3 -rotate-2">
               <div className="text-[11px] text-ink-3">FACT VALIDATION</div>
-              <div className="text-[15px] font-bold text-success">31 verified ✓</div>
-              <div className="text-[12px] text-warn">2 partial · 1 unsupported</div>
+              <div className="text-[15px] font-bold text-success">31 verified âœ“</div>
+              <div className="text-[12px] text-warn">2 partial Â· 1 unsupported</div>
             </div>
             {/* floating mint chip */}
             <div className="float-slow absolute -top-8 -left-10 bg-mint text-white text-[12px] font-semibold rounded-2xl px-4 py-2.5 shadow-lift rotate-3">
-              ✓ Blueprint ready
+              âœ“ Blueprint ready
             </div>
           </div>
         </div>
@@ -250,7 +250,7 @@ export default function Landing() {
                     </span>
                     <span className="text-[15px] font-medium">{step}</span>
                     <span className={`ml-auto text-lg transition-transform ${active ? "translate-x-0 opacity-100" : "-translate-x-1 opacity-0"}`}>
-                      →
+                      â†’
                     </span>
                   </button>
                 );
@@ -335,8 +335,8 @@ export default function Landing() {
 
       <footer className="border-t border-line-subtle bg-surface">
         <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between text-[13px] text-ink-3">
-          <span>TransformAI — AI-powered multimodal content transformation</span>
-          <span>Mint · Teal · Charcoal</span>
+          <span>Prism — AI-powered multimodal content transformation</span>
+          <span>Mint Â· Teal Â· Charcoal</span>
         </div>
       </footer>
     </div>

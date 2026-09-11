@@ -34,7 +34,7 @@ export default function DashboardHome() {
         </Link>
       </div>
 
-      <div className="grid grid-cols-3 gap-4 stagger">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 stagger">
         <Stat label="Projects" value={projects.length} />
         <Stat label="Sources processed" value={totalSources} tone="accent" />
         <Stat label="Outputs generated" value={totalOutputs} tone="accent" />

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import { DM_Sans } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from "@/components/Input";
@@ -9,7 +9,7 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "TransformAI — Content Transformation Platform",
+  title: "Prism — Content Transformation Platform",
   description:
     "Transform any source material into audience-ready communication artefacts, grounded and validated.",
 };

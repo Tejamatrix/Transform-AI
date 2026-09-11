@@ -161,7 +161,7 @@ export default function OutputDetailPage() {
 
       {/* Quality */}
       {quality && (
-        <div className="grid grid-cols-3 md:grid-cols-7 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3">
           <Stat label="Overall" value={`${quality.overall}%`} tone="accent" />
           <Stat label="Accuracy" value={`${quality.accuracy}%`} />
           <Stat label="Fidelity" value={`${quality.source_fidelity}%`} />
@@ -246,7 +246,7 @@ export default function OutputDetailPage() {
         <>
           {validation.validated ? (
             <>
-              <div className="grid grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <Stat label="Verified" value={s.verified ?? 0} tone="success" />
                 <Stat label="Partially supported" value={s.partially_supported ?? 0} tone="warn" />
                 <Stat label="Unsupported" value={s.unsupported ?? 0} tone={s.unsupported ? "error" : "default"} />

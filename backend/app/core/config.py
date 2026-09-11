@@ -1,13 +1,13 @@
-from pydantic_settings import BaseSettings
+﻿from pydantic_settings import BaseSettings
 from pathlib import Path
 
 
 class Settings(BaseSettings):
-    APP_NAME: str = "TransformAI"
+    APP_NAME: str = "Prism"
     SECRET_KEY: str = "dev-secret-change-in-production"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24
 
-    DATABASE_URL: str = "sqlite:///./transformai.db"
+    DATABASE_URL: str = "sqlite:///./Prism.db"
 
     UPLOAD_DIR: str = "./uploads"
     MAX_UPLOAD_MB: int = 25
