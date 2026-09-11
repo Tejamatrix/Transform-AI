@@ -38,13 +38,20 @@ def export(output_id: str, body: ExportRequest, db: Session = Depends(get_db),
         headers={"Content-Disposition": f"attachment; filename*=UTF-8''{quoted}"},
     )
 
-
-@router.post("/{output_id}/quality")
-def quality(output_id: str, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+@router.get("/{output_id}/quality")
+def quality(output_id: str, refresh: bool = False, db: Session = Depends(get_db),
+            user: User = Depends(get_current_user)):
+    """Quality scores — computed once, then cached on the output row so page
+    loads are instant. Pass ?refresh=true to force recomputation."""
     o = db.get(Output, output_id)
     if not o or o.user_id != user.id:
         raise NotFoundError("Output")
+    if o.quality_json and not refresh:
+        return o.quality_json
     from app.models.models import ValidationResult
     v = db.query(ValidationResult).filter(ValidationResult.output_id == o.id) \
         .order_by(ValidationResult.created_at.desc()).first()
-    return val_svc.score_quality(db, o, v.summary if v else None)
+    scores = val_svc.score_quality(db, o, v.summary if v else None)
+    o.quality_json = scores
+    db.commit()
+    return scores

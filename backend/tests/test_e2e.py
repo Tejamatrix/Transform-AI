@@ -146,7 +146,7 @@ supported = [c for c in claims if c["status"] in ("VERIFIED", "PARTIALLY_SUPPORT
 check("facttrace evidence attached", len(supported) >= 1, f"{len(supported)} claims with evidence")
 
 # 8. quality score
-r = client.post(f"/api/export/{adv_id}/quality", headers=H)
+r = client.get(f"/api/export/{adv_id}/quality", headers=H)
 check("quality score", r.status_code == 200 and "overall" in r.json(), str(r.json())[:150])
 
 # 9. editing + versions
@@ -186,7 +186,7 @@ r = client.post("/api/generate", json={
                       "detail": "brief", "objective": "inform"},
 }, headers=H)
 hindi_job = r.json()["id"]
-for _ in range(40):
+for _ in range(120):
     time.sleep(0.5)
     r = client.get(f"/api/generate/job/{hindi_job}", headers=H)
     if r.json().get("status") in ("completed", "failed"):

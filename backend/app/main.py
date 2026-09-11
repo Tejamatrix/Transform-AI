@@ -23,6 +23,17 @@ from app.models import models  # noqa: F401,E402
 
 Base.metadata.create_all(bind=engine)
 
+# lightweight migration for existing databases
+from sqlalchemy import text  # noqa: E402
+
+with engine.connect() as _conn:
+    for _stmt in ("ALTER TABLE outputs ADD COLUMN quality_json JSON",):
+        try:
+            _conn.execute(text(_stmt))
+            _conn.commit()
+        except Exception:
+            pass  # column already exists
+
 app.add_exception_handler(AppError, app_error_handler)
 app.add_exception_handler(Exception, unhandled_handler)
 

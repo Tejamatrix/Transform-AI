@@ -26,6 +26,11 @@ def validate(output_id: str, db: Session = Depends(get_db), user: User = Depends
         .order_by(OutputVersion.version_number.desc()).first()
     result = val_svc.validate_output(db, o)
     result.version_id = current.id if current else ""
+    # precompute + cache quality so the output page loads instantly afterwards
+    try:
+        o.quality_json = val_svc.score_quality(db, o, result.summary)
+    except Exception:
+        pass
     db.commit()
     log_action(db, user.id, o.project_id, "validation.run", f"{o.output_type}")
     return result

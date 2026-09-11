@@ -42,17 +42,36 @@ def generate(body: GenerateRequest, db: Session = Depends(get_db), user: User = 
     user_id = user.id
 
     def work(report) -> dict:
+        """Generate all requested outputs — concurrently (LLM calls dominate;
+        DB writes happen per-thread with their own sessions)."""
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+
         made: list[str] = []
-        for i, output_type in enumerate(requested):
-            report(int(10 + 80 * i / len(requested)), f"Generating {output_type}...")
+        done = 0
+        errors: list[str] = []
+
+        def _one(output_type: str) -> str:
             db2 = SessionLocalSafe()
             try:
                 bp2 = db2.get(Blueprint, blueprint_id)
                 output = gen_svc.generate_output(db2, bp2, output_type, config)
-                made.append(output.id)
+                return output.id
             finally:
                 db2.close()
-        return {"output_ids": made}
+
+        with ThreadPoolExecutor(max_workers=min(3, len(requested))) as pool:
+            futures = {pool.submit(_one, t): t for t in requested}
+            for fut in as_completed(futures):
+                t = futures[fut]
+                try:
+                    made.append(fut.result())
+                except Exception as e:
+                    errors.append(f"{t}: {e}")
+                done += 1
+                report(int(10 + 80 * done / len(requested)), f"Generated {done}/{len(requested)}…")
+        if errors and not made:
+            raise RuntimeError("Generation failed for all outputs: " + "; ".join(errors)[:300])
+        return {"output_ids": made, "failed": errors}
 
     enqueue(job.id, work)
     log_action(db, user.id, project_id, "generate.started", ", ".join(requested))

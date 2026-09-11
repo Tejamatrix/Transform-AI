@@ -71,6 +71,7 @@ def validate_output(db: Session, output: Output) -> ValidationResult:
         raw = run_validate(_output_text(output.content), chunks)
 
     # Normalize live-LLM claim shapes: str entries, status casing, numeric confidence.
+    from app.services.analyzer import _normalize_source_ref
     norm_claims = []
     for c in raw.get("claims") or []:
         if isinstance(c, str) and c.strip():
@@ -84,7 +85,7 @@ def validate_output(db: Session, output: Output) -> ValidationResult:
                 conf = max(0.0, min(1.0, float(c.get("confidence", 0) or 0)))
             except (TypeError, ValueError):
                 conf = 0.0
-            ev = [e for e in (c.get("evidence") or []) if isinstance(e, dict)]
+            ev = [_normalize_source_ref(e) for e in (c.get("evidence") or []) if isinstance(e, dict)]
             norm_claims.append({"claim": str(c["claim"])[:600], "status": status,
                                 "confidence": round(conf, 2), "evidence": ev[:4]})
     raw["claims"] = norm_claims[:60]
