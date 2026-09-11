@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { ProjectOut } from "@/lib/types";
 import { Card, SectionTitle } from "@/components/Card";
@@ -23,11 +22,9 @@ const QUICK_ACTIONS = [
 ];
 
 export default function DashboardHome() {
-  const router = useRouter();
   const [projects, setProjects] = useState<ProjectOut[]>([]);
   const [loading, setLoading] = useState(true);
   const [userName, setUserName] = useState("");
-
   useEffect(() => {
     api<ProjectOut[]>("/api/projects")
       .then(setProjects)
@@ -39,7 +36,6 @@ export default function DashboardHome() {
     } catch {}
   }, []);
 
-  const totalOutputs = projects.reduce((a, p) => a + p.output_count, 0);
 
   return (
     <div className="flex flex-col gap-8">
