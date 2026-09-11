@@ -3,26 +3,27 @@
 @tailwind utilities;
 
 :root {
-  /* Color tokens — Modern fintech SaaS: mint / sage / cream / charcoal / teal */
-  --bg: #EEF3ED;            /* very light sage background */
+  /* Color tokens — PRISM: white/light-gray base, pastel blue-teal-purple accents */
+  --bg: #F5F6F8;            /* light gray background */
   --surface: #FFFFFF;       /* cards */
-  --elevated: #E3EDE4;      /* soft sage wash */
-  --cream: #F4EEDC;         /* soft cream highlight */
-  --line: #DCE5DC;          /* sage-gray border */
-  --line-subtle: #E6E9E0;   /* warm subtle border */
+  --elevated: #EEF1F5;      /* soft gray-blue wash */
+  --cream: #EDF0FB;         /* pastel indigo tint (was cream) */
+  --line: #DFE4EB;          /* gray-blue border */
+  --line-subtle: #E7EAF0;   /* subtle border */
   --input-bg: #FFFFFF;
-  --ink: #3F4743;           /* dark charcoal text */
-  --ink-2: #6A726C;         /* secondary text */
-  --ink-3: #98A099;         /* muted text */
-  --accent: #18B7A5;        /* teal — interactive elements */
-  --accent-strong: #0F9D8C;
-  --mint: #59B99B;          /* mint / seafoam primary */
-  --mint-soft: #DFF0E9;     /* soft mint fill */
-  --turquoise: #2FC6B2;
-  --highlight: #F5EFCF;     /* pale yellow-cream highlight */
+  --ink: #2E3440;           /* dark charcoal text */
+  --ink-2: #646B7A;         /* secondary text */
+  --ink-3: #969DAB;         /* muted text */
+  --accent: #5B8DEF;        /* pastel blue — interactive elements */
+  --accent-strong: #3D74E0;
+  --mint: #7BE0D3;          /* pastel teal */
+  --mint-soft: #E0F5F1;     /* soft teal fill */
+  --turquoise: #2DD4BF;
+  --violet: #A78BFA;        /* pastel purple */
+  --highlight: #ECEAFE;     /* pale purple highlight */
   --error: #DC2626;
-  --success: #3E7D4E;
-  --warn: #B08115;
+  --success: #16A34A;
+  --warn: #D97706;
 }
 
 html,
@@ -207,11 +208,11 @@ a {
   pointer-events: none;
   z-index: -1;
   background:
-    radial-gradient(640px 420px at 10% 6%, rgba(89, 185, 155, 0.16), transparent 62%),
-    radial-gradient(720px 520px at 90% 14%, rgba(99, 102, 241, 0.09), transparent 62%),
-    radial-gradient(640px 520px at 68% 92%, rgba(24, 183, 165, 0.11), transparent 60%),
-    radial-gradient(500px 380px at 24% 88%, rgba(245, 239, 207, 0.5), transparent 65%),
-    linear-gradient(160deg, #EEF3ED 0%, #F2F1E9 52%, #E9EEF5 100%);
+    radial-gradient(640px 420px at 10% 6%, rgba(91, 141, 239, 0.14), transparent 62%),
+    radial-gradient(720px 520px at 90% 14%, rgba(167, 139, 250, 0.11), transparent 62%),
+    radial-gradient(640px 520px at 68% 92%, rgba(45, 212, 191, 0.12), transparent 60%),
+    radial-gradient(500px 380px at 24% 88%, rgba(236, 234, 254, 0.6), transparent 65%),
+    linear-gradient(160deg, #F5F6F8 0%, #F1F2F7 52%, #EDF1F8 100%);
 }
 
 .glass {
