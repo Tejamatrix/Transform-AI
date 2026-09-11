@@ -102,6 +102,56 @@ class TextExtractor(BaseExtractor):
         return text[:MAX_CHARS], {"char_count": len(text)}
 
 
+def _ocr_scanned_pdf(data: bytes) -> tuple[str, dict]:
+    """Scanned / image-only PDF: rasterize pages with PyMuPDF, OCR with Tesseract."""
+    import pymupdf
+    import tempfile
+
+    tesseract = _find_tesseract()
+    if not tesseract:
+        raise IngestionError(
+            "No text layer found in this PDF (it looks scanned). OCR is available but the "
+            "Tesseract engine is not installed on the server."
+        )
+    try:
+        doc = pymupdf.open(stream=data, filetype="pdf")
+    except Exception:
+        raise IngestionError("The PDF appears to be corrupted or unreadable.")
+
+    max_pages = min(len(doc), 10)  # bound OCR time
+    texts: list[str] = []
+    for i in range(max_pages):
+        tmp = tempfile.NamedTemporaryFile(suffix=".png", delete=False)
+        tmp.close()
+        try:
+            pix = doc[i].get_pixmap(dpi=200)
+            pix.save(tmp.name)
+            proc = subprocess.run(
+                [tesseract, tmp.name, "stdout", "--psm", "3", "-l", "eng"],
+                capture_output=True, timeout=120,
+            )
+            page_text = (proc.stdout or b"").decode("utf-8", errors="replace")
+            page_text = re.sub(r"[ \t]+", " ", page_text)
+            page_text = re.sub(r"\n{2,}", "\n", page_text).strip()
+            if len(page_text) > 10:
+                texts.append(f"[Page {i + 1}]\n{page_text}")
+        except Exception:
+            continue
+        finally:
+            try:
+                os.unlink(tmp.name)
+            except OSError:
+                pass
+    doc.close()
+
+    full = "\n\n".join(texts)[:MAX_CHARS]
+    if len(full.strip()) < 20:
+        raise IngestionError(
+            "OCR found no readable text in the scanned PDF. Try clearer or higher-resolution scans."
+        )
+    return full, {"page_count": max_pages, "ocr": True, "ocr_pages": len(texts)}
+
+
 class PdfExtractor(BaseExtractor):
     source_type = "pdf"
 
@@ -115,8 +165,9 @@ class PdfExtractor(BaseExtractor):
                 t = (page.extract_text() or "").strip()
                 pages.append(t)
             full = "\n\n".join(f"[Page {i + 1}]\n{t}" for i, t in enumerate(pages) if t)
-            if not full.strip():
-                raise IngestionError("No readable text found (scanned images require OCR, coming soon).")
+            if len(full.strip()) < 40:
+                # no text layer -> scanned / image-only PDF: OCR fallback
+                return _ocr_scanned_pdf(data)
             return full[:MAX_CHARS], {"page_count": len(reader.pages)}
         except IngestionError:
             raise
